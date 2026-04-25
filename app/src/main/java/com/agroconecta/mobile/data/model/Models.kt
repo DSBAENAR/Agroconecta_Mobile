@@ -4,7 +4,7 @@ data class Product(
     val id: String,
     val name: String,
     val category: String,
-    val price: Int,
+    val price: Double,
     val unit: String,
     val available: Int,
     val minOrder: Int,
@@ -16,7 +16,11 @@ data class Product(
     val status: ProductStatus = ProductStatus.ACTIVE
 )
 
-enum class ProductStatus { ACTIVE, SOLD }
+enum class ProductStatus {
+    ACTIVE,
+    SOLD,
+    PAUSED
+}
 
 data class Farmer(
     val id: String,
@@ -30,7 +34,7 @@ data class Farmer(
     val location: String,
     val email: String,
     val phone: String,
-    val certifications: List<String>
+    val certifications: List<String> = emptyList()
 )
 
 data class Purchase(
@@ -39,12 +43,15 @@ data class Purchase(
     val sellerName: String,
     val quantity: Int,
     val unit: String,
-    val totalPrice: Int,
+    val totalPrice: Double,
     val status: PurchaseStatus
 )
 
 enum class PurchaseStatus {
-    DELIVERED, IN_TRANSIT, PENDING
+    DELIVERED,
+    IN_TRANSIT,
+    PENDING,
+    CANCELLED
 }
 
 data class AIInsight(
@@ -54,7 +61,10 @@ data class AIInsight(
 )
 
 enum class InsightType {
-    PRICE, HARVEST, SHIPPING
+    PRICE,
+    HARVEST,
+    SHIPPING,
+    DEMAND
 }
 
 data class DemandItem(
@@ -63,5 +73,7 @@ data class DemandItem(
 )
 
 enum class DemandLevel {
-    HIGH, MEDIUM, LOW
+    HIGH,
+    MEDIUM,
+    LOW
 }

@@ -25,17 +25,16 @@ import com.agroconecta.mobile.ui.screens.login.LoginScreen
 import com.agroconecta.mobile.ui.screens.marketplace.MarketplaceScreen
 import com.agroconecta.mobile.ui.screens.onboarding.RoleSelectionScreen
 import com.agroconecta.mobile.ui.screens.onboarding.WelcomeScreen
-import com.agroconecta.mobile.ui.screens.register.RegisterScreen
 import com.agroconecta.mobile.ui.screens.product.ProductDetailScreen
 import com.agroconecta.mobile.ui.screens.profile.ProfileScreen
+import com.agroconecta.mobile.ui.screens.register.RegisterScreen
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: ""
+    val currentRoute = navBackStackEntry?.destination?.route.orEmpty()
 
-    // Track if the user is a farmer (set after login)
     var isFarmerUser by remember { mutableStateOf(false) }
 
     val showBottomBar = currentRoute in listOf(
@@ -55,7 +54,7 @@ fun AppNavigation() {
                         currentRoute = currentRoute,
                         onNavigate = { route ->
                             navController.navigate(route) {
-                                popUpTo(if (isFarmerUser) Screen.FarmerHome.route else Screen.BuyerHome.route) {
+                                popUpTo(Screen.FarmerHome.route) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
@@ -85,11 +84,14 @@ fun AppNavigation() {
             startDestination = Screen.Welcome.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+
             composable(Screen.Welcome.route) {
                 WelcomeScreen(
                     onContinueClick = {
                         navController.navigate(Screen.RoleSelection.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                            popUpTo(Screen.Welcome.route) {
+                                inclusive = true
+                            }
                         }
                     }
                 )
@@ -112,14 +114,16 @@ fun AppNavigation() {
                     onLoginClick = {
                         isFarmerUser = false
                         navController.navigate(Screen.BuyerHome.route) {
-                            popUpTo(Screen.LoginBuyer.route) { inclusive = true }
+                            popUpTo(Screen.LoginBuyer.route) {
+                                inclusive = true
+                            }
                         }
                     },
-                    onGoogleClick = { },
+                    onGoogleClick = {},
                     onRegisterClick = {
                         navController.navigate(Screen.RegisterBuyer.route)
                     },
-                    onForgotPasswordClick = { }
+                    onForgotPasswordClick = {}
                 )
             }
 
@@ -129,15 +133,17 @@ fun AppNavigation() {
                     onLoginClick = {
                         isFarmerUser = true
                         navController.navigate(Screen.FarmerHome.route) {
-                            popUpTo(Screen.LoginFarmer.route) { inclusive = true }
+                            popUpTo(Screen.LoginFarmer.route) {
+                                inclusive = true
+                            }
                         }
                     },
-                    onGoogleClick = { },
+                    onGoogleClick = {},
                     onRegisterClick = {
                         navController.navigate(Screen.RegisterFarmer.route)
                     },
-                    onForgotPasswordClick = { },
-                    onSmsCodeClick = { }
+                    onForgotPasswordClick = {},
+                    onSmsCodeClick = {}
                 )
             }
 
@@ -147,10 +153,14 @@ fun AppNavigation() {
                     onRegisterClick = {
                         isFarmerUser = false
                         navController.navigate(Screen.BuyerHome.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                            popUpTo(Screen.Welcome.route) {
+                                inclusive = true
+                            }
                         }
                     },
-                    onLoginClick = { navController.popBackStack() }
+                    onLoginClick = {
+                        navController.popBackStack()
+                    }
                 )
             }
 
@@ -160,33 +170,43 @@ fun AppNavigation() {
                     onRegisterClick = {
                         isFarmerUser = true
                         navController.navigate(Screen.FarmerHome.route) {
-                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                            popUpTo(Screen.Welcome.route) {
+                                inclusive = true
+                            }
                         }
                     },
-                    onLoginClick = { navController.popBackStack() }
+                    onLoginClick = {
+                        navController.popBackStack()
+                    }
                 )
             }
 
             composable(Screen.BuyerHome.route) {
                 HomeScreen(
-                    onExploreClick = { navController.navigate(Screen.Marketplace.route) },
+                    onExploreClick = {
+                        navController.navigate(Screen.Marketplace.route)
+                    },
                     onFarmerClick = {
-                        navController.navigate(Screen.LoginFarmer.route) {
-                            popUpTo(Screen.BuyerHome.route) { inclusive = true }
-                        }
+                        navController.navigate(Screen.LoginFarmer.route)
                     },
                     onProductClick = { productId ->
-                        navController.navigate(Screen.ProductDetail.createRoute(productId))
+                        navController.navigate(
+                            Screen.ProductDetail.createRoute(productId)
+                        )
                     }
                 )
             }
 
             composable(Screen.FarmerHome.route) {
                 HomeScreen(
-                    onExploreClick = { navController.navigate(Screen.Marketplace.route) },
-                    onFarmerClick = { },
+                    onExploreClick = {
+                        navController.navigate(Screen.Marketplace.route)
+                    },
+                    onFarmerClick = {},
                     onProductClick = { productId ->
-                        navController.navigate(Screen.ProductDetail.createRoute(productId))
+                        navController.navigate(
+                            Screen.ProductDetail.createRoute(productId)
+                        )
                     }
                 )
             }
@@ -194,23 +214,39 @@ fun AppNavigation() {
             composable(Screen.Marketplace.route) {
                 MarketplaceScreen(
                     onProductClick = { productId ->
-                        navController.navigate(Screen.ProductDetail.createRoute(productId))
+                        navController.navigate(
+                            Screen.ProductDetail.createRoute(productId)
+                        )
                     },
-                    onFilterClick = { }
+                    onFilterClick = {}
                 )
             }
 
             composable(
                 route = Screen.ProductDetail.route,
-                arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("productId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
-                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                val productId =
+                    backStackEntry.arguments?.getString("productId").orEmpty()
+
                 ProductDetailScreen(
                     productId = productId,
-                    onBackClick = { navController.popBackStack() },
-                    onAddToCartClick = { },
-                    onContactFarmerClick = { },
-                    onViewFarmerClick = { navController.navigate(Screen.Profile.route) }
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onAddToCartClick = {
+                        // Aquí irá la lógica del carrito
+                    },
+                    onContactFarmerClick = {
+                        // Aquí irá la lógica del chat/contacto
+                    },
+                    onViewFarmerClick = {
+                        navController.navigate(Screen.Profile.route)
+                    }
                 )
             }
 
@@ -220,15 +256,23 @@ fun AppNavigation() {
 
             composable(Screen.FarmerDashboard.route) {
                 FarmerDashboardScreen(
-                    onAddProductClick = { navController.navigate(Screen.CreatePublication.route) },
-                    onAnalysisClick = { navController.navigate(Screen.AIAnalysis.route) }
+                    onAddProductClick = {
+                        navController.navigate(Screen.CreatePublication.route)
+                    },
+                    onAnalysisClick = {
+                        navController.navigate(Screen.AIAnalysis.route)
+                    }
                 )
             }
 
             composable(Screen.CreatePublication.route) {
                 CreatePublicationScreen(
-                    onBackClick = { navController.popBackStack() },
-                    onPublishClick = { navController.popBackStack() }
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onPublishClick = {
+                        navController.popBackStack()
+                    }
                 )
             }
 
@@ -239,7 +283,7 @@ fun AppNavigation() {
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     isFarmer = isFarmerUser,
-                    onEditProfileClick = { }
+                    onEditProfileClick = {}
                 )
             }
         }

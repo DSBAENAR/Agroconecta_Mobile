@@ -1,19 +1,10 @@
 package com.agroconecta.mobile.ui.screens.product
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,85 +15,71 @@ import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.ui.theme.GrayDark
-import com.agroconecta.mobile.ui.theme.Black
-import com.agroconecta.mobile.ui.theme.GrayBorder
-import com.agroconecta.mobile.ui.theme.GrayLight
-import com.agroconecta.mobile.ui.theme.GrayMedium
-import com.agroconecta.mobile.ui.theme.GreenDark
-import com.agroconecta.mobile.ui.theme.GreenLight
-import com.agroconecta.mobile.ui.theme.GreenPrimary
-import com.agroconecta.mobile.ui.theme.White
-
-// ---------------------------------------------------------------------------
-// Hardcoded sample data
-// ---------------------------------------------------------------------------
-
-private data class ProductDetail(
-    val name: String,
-    val category: String,
-    val rating: String,
-    val price: String,
-    val unit: String,
-    val availableStock: String,
-    val minOrder: String,
-    val location: String,
-    val description: String,
-    val farmerInitials: String,
-    val farmerName: String,
-    val farmerSubtitle: String
-)
-
-private val sampleProduct = ProductDetail(
-    name = "Tomates Cherry",
-    category = "Frutas y Verduras",
-    rating = "4.8",
-    price = "3.500",
-    unit = "kg",
-    availableStock = "500 kg",
-    minOrder = "10 kg",
-    location = "Boyacá",
-    description = "Tomate cherry cultivado en las montañas de Boyacá con más de 20 años de " +
-        "tradición agrícola. Variedad nacional de excelente sabor dulce, ideal para ensaladas " +
-        "y consumo en fresco. Producción sin pesticidas, con riego por goteo y control " +
-        "biológico de plagas. Cosecha semanal garantizando frescura.",
-    farmerInitials = "JP",
-    farmerName = "Juan Pérez",
-    farmerSubtitle = "Agricultor verificado · 150 ventas"
-)
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
+import com.agroconecta.mobile.data.DataProducts
+import com.agroconecta.mobile.data.model.Product
+import com.agroconecta.mobile.ui.theme.*
 
 @Composable
 fun ProductDetailScreen(
     productId: String,
     onBackClick: () -> Unit,
-    onAddToCartClick: () -> Unit,
-    onContactFarmerClick: () -> Unit,
-    onViewFarmerClick: () -> Unit
+    onAddToCartClick: (String) -> Unit,
+    onContactFarmerClick: (String) -> Unit,
+    onViewFarmerClick: (String) -> Unit
 ) {
-    val product = sampleProduct
-    val scrollState = rememberScrollState()
+    val product = DataProducts.getProductById(productId)
+
+    if (product == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Producto no encontrado")
+        }
+        return
+    }
+
+    ProductDetailContent(
+        product = product,
+        onBackClick = onBackClick,
+        onAddToCartClick = onAddToCartClick,
+        onContactFarmerClick = onContactFarmerClick,
+        onViewFarmerClick = onViewFarmerClick
+    )
+}
+
+@Composable
+private fun ProductDetailContent(
+    product: Product,
+    onBackClick: () -> Unit,
+    onAddToCartClick: (String) -> Unit,
+    onContactFarmerClick: (String) -> Unit,
+    onViewFarmerClick: (String) -> Unit
+) {
+    val description = if (product.description.isBlank()) {
+        "Producto fresco y de alta calidad, cultivado por agricultores verificados de AgroConecta."
+    } else {
+        product.description
+    }
+
+    val farmerInitials = product.name
+        .split(" ")
+        .take(2)
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .joinToString("")
+        .uppercase()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -111,185 +88,101 @@ fun ProductDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
+                .verticalScroll(rememberScrollState())
         ) {
-
-            // ----------------------------------------------------------------
-            // Back button
-            // ----------------------------------------------------------------
-            BackButton(onBackClick = onBackClick)
-
-            // ----------------------------------------------------------------
-            // Product image placeholder
-            // ----------------------------------------------------------------
+            BackButton(onBackClick)
             ProductImagePlaceholder()
 
-            // ----------------------------------------------------------------
-            // Content below the image
-            // ----------------------------------------------------------------
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(16.dp)
             ) {
+                CategoryAndRatingRow(
+                    category = product.category,
+                    rating = product.rating.toDouble()
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Category pill + Rating pill
-                CategoryAndRatingRow(
-                    category = product.category,
-                    rating = product.rating
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Black
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Product name
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Black
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Price + unit
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        text = "$ ${product.price}",
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = GreenPrimary,
-                            fontSize = 36.sp
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "/ ${product.unit}",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            color = GrayMedium,
-                            fontWeight = FontWeight.Normal
-                        ),
-                        modifier = Modifier.padding(bottom = 5.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Description
-                DescriptionSection(description = product.description)
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Info cards row
-                InfoCardsRow(
-                    availableStock = product.availableStock,
-                    minOrder = product.minOrder,
-                    location = product.location
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Farmer card
-                FarmerCard(
-                    initials = product.farmerInitials,
-                    name = product.farmerName,
-                    subtitle = product.farmerSubtitle,
-                    onViewFarmerClick = onViewFarmerClick
+                PriceSection(
+                    price = product.price,
+                    unit = product.unit
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Add to cart button
-                Button(
-                    onClick = onAddToCartClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GreenPrimary,
-                        contentColor = White
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ShoppingCart,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Agregar al Carrito",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
+                DescriptionSection(description)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                InfoCardsRow(
+                    availableStock = "${product.available} ${product.unit}",
+                    minOrder = "${product.minOrder} ${product.unit}",
+                    location = product.location
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                FarmerCard(
+                    initials = farmerInitials,
+                    name = "Agricultor AgroConecta",
+                    subtitle = "Productor verificado",
+                    onViewFarmerClick = {
+                        onViewFarmerClick(product.farmerId)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AddToCartButton(
+                    productId = product.id,
+                    onAddToCartClick = onAddToCartClick
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Contact farmer button (outlined)
-                OutlinedButton(
-                    onClick = onContactFarmerClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        width = 1.5.dp,
-                        color = GreenPrimary
-                    ),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = GreenPrimary
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ChatBubbleOutline,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Contactar Agricultor",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
+                ContactFarmerButton(
+                    productId = product.id,
+                    onContactFarmerClick = onContactFarmerClick
+                )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Private composables
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun BackButton(onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-            .clickable(onClick = onBackClick),
+            .clickable { onBackClick() }
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = Icons.Filled.ArrowBack,
+            Icons.Default.ArrowBack,
             contentDescription = "Volver",
-            tint = GreenPrimary,
-            modifier = Modifier.size(20.dp)
+            tint = GreenPrimary
         )
-        Spacer(modifier = Modifier.width(4.dp))
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         Text(
             text = "Volver",
-            style = MaterialTheme.typography.titleMedium.copy(
-                color = GreenPrimary,
-                fontWeight = FontWeight.Medium
-            )
+            color = GreenPrimary,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
@@ -299,90 +192,119 @@ private fun ProductImagePlaceholder() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(260.dp)
+            .height(280.dp)
             .background(GreenLight),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .size(110.dp)
                 .clip(CircleShape)
                 .background(GreenPrimary.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Filled.Eco,
+                imageVector = Icons.Default.Eco,
                 contentDescription = null,
-                tint = GreenPrimary.copy(alpha = 0.55f),
-                modifier = Modifier.size(52.dp)
+                tint = GreenPrimary,
+                modifier = Modifier.size(60.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun CategoryAndRatingRow(
+    category: String,
+    rating: Double
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Pill(
+            text = category,
+            background = GreenPrimary,
+            textColor = White
+        )
+
+        Pill(
+            text = "★ $rating",
+            background = GreenLight,
+            textColor = GreenDark,
+            bordered = true
+        )
+    }
+}
+
+@Composable
+private fun Pill(
+    text: String,
+    background: Color,
+    textColor: Color,
+    bordered: Boolean = false
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(background)
+            .then(
+                if (bordered) {
+                    Modifier.border(
+                        1.dp,
+                        GreenPrimary.copy(alpha = 0.25f),
+                        RoundedCornerShape(50)
+                    )
+                } else Modifier
+            )
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun PriceSection(
+    price: Double,
+    unit: String
+) {
+    Row(verticalAlignment = Alignment.Bottom) {
+        Text(
+            text = "$ ${String.format("%,.0f", price).replace(",", ".")}",
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold,
+            color = GreenPrimary
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = "/ $unit",
+            color = GrayMedium,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
     }
 }
 
 @Composable
 private fun DescriptionSection(description: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column {
         Text(
             text = "Descripción",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = Black
-            )
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = description,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = GrayDark,
-                lineHeight = 22.sp
-            )
+            color = GrayDark,
+            lineHeight = 24.sp
         )
-    }
-}
-
-@Composable
-private fun CategoryAndRatingRow(category: String, rating: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Category pill
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50.dp))
-                .background(GreenPrimary)
-                .padding(horizontal = 12.dp, vertical = 5.dp)
-        ) {
-            Text(
-                text = category,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = White,
-                    fontWeight = FontWeight.Medium
-                )
-            )
-        }
-
-        // Rating pill
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50.dp))
-                .background(GreenLight)
-                .border(
-                    width = 1.dp,
-                    color = GreenPrimary.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(50.dp)
-                )
-                .padding(horizontal = 12.dp, vertical = 5.dp)
-        ) {
-            Text(
-                text = "\u2605 $rating",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = GreenDark,
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-        }
     }
 }
 
@@ -393,15 +315,24 @@ private fun InfoCardsRow(
     location: String
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        InfoCard(value = availableStock, label = "Disponible",  modifier = Modifier.weight(1f))
-        InfoCard(value = minOrder,       label = "Min. pedido", modifier = Modifier.weight(1f))
+        InfoCard(
+            value = availableStock,
+            label = "Disponible",
+            modifier = Modifier.weight(1f)
+        )
+
+        InfoCard(
+            value = minOrder,
+            label = "Min. pedido",
+            modifier = Modifier.weight(1f)
+        )
+
         InfoCard(
             value = location,
             label = "Ubicación",
-            icon = Icons.Filled.LocationOn,
+            icon = Icons.Default.LocationOn,
             modifier = Modifier.weight(1f)
         )
     }
@@ -412,45 +343,43 @@ private fun InfoCard(
     value: String,
     label: String,
     modifier: Modifier = Modifier,
-    icon: androidx.compose.ui.graphics.vector.ImageVector? = null
+    icon: ImageVector? = null
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = GrayLight),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = GrayLight)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (icon != null) {
+            icon?.let {
                 Icon(
-                    imageVector = icon,
+                    it,
                     contentDescription = null,
                     tint = GreenPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+
+                Spacer(modifier = Modifier.height(6.dp))
             }
+
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Black
-                ),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = GrayMedium
-                ),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = GrayMedium,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -464,65 +393,109 @@ private fun FarmerCard(
     onViewFarmerClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = GrayLight),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar circle with initials
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .background(GreenPrimary),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = initials,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = White,
-                        fontWeight = FontWeight.Bold
-                    )
+                    color = White,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Name and subtitle
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = Black
-                    )
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = GrayMedium
-                    )
+                    color = GrayMedium,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
 
-            // "Ver" link
             Text(
                 text = "Ver",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = GreenPrimary,
-                    fontWeight = FontWeight.SemiBold
-                ),
-                modifier = Modifier
-                    .clickable(onClick = onViewFarmerClick)
-                    .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
+                color = GreenPrimary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    onViewFarmerClick()
+                }
             )
         }
     }
+}
+
+@Composable
+private fun AddToCartButton(
+    productId: String,
+    onAddToCartClick: (String) -> Unit
+) {
+    Button(
+        onClick = { onAddToCartClick(productId) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = GreenPrimary
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Icon(Icons.Default.ShoppingCart, null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Agregar al carrito")
+    }
+}
+
+@Composable
+private fun ContactFarmerButton(
+    productId: String,
+    onContactFarmerClick: (String) -> Unit
+) {
+    OutlinedButton(
+        onClick = { onContactFarmerClick(productId) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        border = BorderStroke(1.5.dp, GreenPrimary),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = GreenPrimary
+        )
+    ) {
+        Icon(Icons.Outlined.ChatBubbleOutline, null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Contactar agricultor")
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun ProductDetailScreenPreview() {
+    ProductDetailScreen(
+        productId = "1",
+        onBackClick = {},
+        onAddToCartClick = {},
+        onContactFarmerClick = {},
+        onViewFarmerClick = {}
+    )
 }

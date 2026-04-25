@@ -27,17 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.agroconecta.mobile.data.DataPurchases
 import com.agroconecta.mobile.data.model.Purchase
 import com.agroconecta.mobile.data.model.PurchaseStatus
-import com.agroconecta.mobile.ui.theme.AgroConectaTheme
-import com.agroconecta.mobile.ui.theme.GrayBorder
 import com.agroconecta.mobile.ui.theme.GrayDark
 import com.agroconecta.mobile.ui.theme.GrayLight
 import com.agroconecta.mobile.ui.theme.GrayMedium
-import com.agroconecta.mobile.ui.theme.GreenDark
 import com.agroconecta.mobile.ui.theme.GreenLight
 import com.agroconecta.mobile.ui.theme.GreenPrimary
 import com.agroconecta.mobile.ui.theme.OrangeLight
@@ -46,54 +43,18 @@ import com.agroconecta.mobile.ui.theme.StatusInTransit
 import com.agroconecta.mobile.ui.theme.StatusPending
 import com.agroconecta.mobile.ui.theme.White
 
-// ---------------------------------------------------------------------------
-// Sample data
-// ---------------------------------------------------------------------------
-
-private val samplePurchases = listOf(
-    Purchase(
-        id = "1",
-        productName = "Tomates Cherry",
-        sellerName = "Juan Pérez",
-        quantity = 50,
-        unit = "kg",
-        totalPrice = 175_000,
-        status = PurchaseStatus.DELIVERED
-    ),
-    Purchase(
-        id = "2",
-        productName = "Lechuga Orgánica",
-        sellerName = "María González",
-        quantity = 30,
-        unit = "kg",
-        totalPrice = 84_000,
-        status = PurchaseStatus.IN_TRANSIT
-    ),
-    Purchase(
-        id = "3",
-        productName = "Papas Criollas",
-        sellerName = "Ana Rodríguez",
-        quantity = 100,
-        unit = "kg",
-        totalPrice = 320_000,
-        status = PurchaseStatus.PENDING
-    )
-)
-
-// Each product gets a distinct avatar color so the circle is visually distinct.
-private val productAvatarColors = listOf(
-    Color(0xFFEF9A9A), // soft red  – Tomates Cherry
-    Color(0xFFA5D6A7), // soft green – Lechuga Orgánica
-    Color(0xFFFFCC80)  // soft amber – Papas Criollas
-)
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 @Composable
 fun BuyerDashboardScreen() {
+    val purchases = DataPurchases.getRecentPurchases()
     val scrollState = rememberScrollState()
+
+    val totalPurchases = purchases.size
+    val pendingPurchases = purchases.count {
+        it.status == PurchaseStatus.PENDING
+    }
+    val totalSpent = purchases.sumOf {
+        it.totalPrice
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -103,54 +64,48 @@ fun BuyerDashboardScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+                .padding(16.dp)
         ) {
-            // ----------------------------------------------------------------
-            // Header
-            // ----------------------------------------------------------------
             DashboardHeader()
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ----------------------------------------------------------------
-            // Stat cards row
-            // ----------------------------------------------------------------
-            StatCardsRow()
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ----------------------------------------------------------------
-            // Recent purchases section
-            // ----------------------------------------------------------------
+            StatCardsRow(
+                totalPurchases = totalPurchases,
+                pendingPurchases = pendingPurchases,
+                totalSpent = totalSpent
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Text(
                 text = "Compras recientes",
                 style = MaterialTheme.typography.titleLarge,
-                color = GrayDark,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold,
+                color = GrayDark
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            samplePurchases.forEachIndexed { index, purchase ->
-                PurchaseCard(
-                    purchase = purchase,
-                    avatarColor = productAvatarColors.getOrElse(index) { GrayMedium }
-                )
-                if (index < samplePurchases.lastIndex) {
-                    Spacer(modifier = Modifier.height(10.dp))
+            if (purchases.isEmpty()) {
+                EmptyPurchasesState()
+            } else {
+                purchases.forEachIndexed { index, purchase ->
+                    PurchaseCard(
+                        purchase = purchase,
+                        avatarColor = getProductColor(index)
+                    )
+
+                    if (index < purchases.lastIndex) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
 
-            // Bottom breathing room so content isn't flush against nav bar
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Header composable
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun DashboardHeader() {
@@ -161,7 +116,9 @@ private fun DashboardHeader() {
             fontWeight = FontWeight.Bold,
             color = GrayDark
         )
+
         Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = "Gestiona tus compras y proveedores",
             style = MaterialTheme.typography.bodyMedium,
@@ -170,43 +127,41 @@ private fun DashboardHeader() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Stat cards row
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun StatCardsRow() {
+private fun StatCardsRow(
+    totalPurchases: Int,
+    pendingPurchases: Int,
+    totalSpent: Double
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         StatCard(
-            value = "8",
+            value = totalPurchases.toString(),
             label = "Compras",
             valueColor = GreenPrimary,
             backgroundColor = GreenLight,
             modifier = Modifier.weight(1f)
         )
+
         StatCard(
-            value = "3",
+            value = pendingPurchases.toString(),
             label = "Pendientes",
-            valueColor = GreenPrimary,
-            backgroundColor = Color(0xFFFFFDE7), // light yellow
+            valueColor = StatusPending,
+            backgroundColor = OrangeLight,
             modifier = Modifier.weight(1f)
         )
+
         StatCard(
-            value = "$1.2M",
+            value = totalSpent.toFormattedPrice(),
             label = "Gastado",
             valueColor = GrayDark,
-            backgroundColor = Color(0xFFEEEEEE), // light gray
+            backgroundColor = White,
             modifier = Modifier.weight(1f)
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Individual stat card
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun StatCard(
@@ -218,37 +173,34 @@ private fun StatCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(vertical = 20.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = valueColor
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
+            Spacer(modifier = Modifier.height(6.dp))
+
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = GrayMedium,
-                maxLines = 1
+                color = GrayMedium
             )
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Purchase card
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun PurchaseCard(
@@ -257,114 +209,140 @@ private fun PurchaseCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = White
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 14.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Product color avatar
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(52.dp)
                     .clip(CircleShape)
                     .background(avatarColor)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-            // Product details – takes remaining space before the badge
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = purchase.productName,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = GrayDark
                 )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = "${purchase.sellerName} · ${purchase.quantity} ${purchase.unit} · ${purchase.totalPrice.toFormattedPrice()}",
+                    text = purchase.sellerName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = GrayMedium
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = "${purchase.quantity} ${purchase.unit}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = GrayMedium,
-                    maxLines = 1
+                    color = GrayMedium
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = purchase.totalPrice.toFormattedPrice(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = GreenPrimary
                 )
             }
 
-            Spacer(modifier = Modifier.width(10.dp))
-
-            // Status badge
             StatusBadge(status = purchase.status)
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Status badge
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun StatusBadge(status: PurchaseStatus) {
-    val (label, textColor, bgColor) = when (status) {
+private fun StatusBadge(
+    status: PurchaseStatus
+) {
+    val (text, textColor, backgroundColor) = when (status) {
         PurchaseStatus.DELIVERED -> Triple(
             "Entregado",
             StatusDelivered,
-            StatusDelivered.copy(alpha = 0.12f)
+            StatusDelivered.copy(alpha = 0.15f)
         )
+
         PurchaseStatus.IN_TRANSIT -> Triple(
             "En tránsito",
             StatusInTransit,
-            StatusInTransit.copy(alpha = 0.12f)
+            StatusInTransit.copy(alpha = 0.15f)
         )
+
         PurchaseStatus.PENDING -> Triple(
             "Pendiente",
             StatusPending,
             OrangeLight
         )
+
+        PurchaseStatus.CANCELLED -> Triple(
+            "Cancelado",
+            Color(0xFFD32F2F),
+            Color(0xFFFFEBEE)
+        )
     }
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(bgColor)
-            .padding(horizontal = 10.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(50))
+            .background(backgroundColor)
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
+            text = text,
             color = textColor,
-            fontSize = 11.sp
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
 
-// ---------------------------------------------------------------------------
-// Extension: format Int price as Colombian peso string (e.g. 175000 -> $175,000)
-// ---------------------------------------------------------------------------
-
-private fun Int.toFormattedPrice(): String {
-    val formatted = this.toString()
-        .reversed()
-        .chunked(3)
-        .joinToString(",")
-        .reversed()
-    return "$$formatted"
+@Composable
+private fun EmptyPurchasesState() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Aún no has realizado compras.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = GrayMedium
+        )
+    }
 }
 
-// ---------------------------------------------------------------------------
-// Preview
-// ---------------------------------------------------------------------------
+private fun getProductColor(index: Int): Color {
+    val colors = listOf(
+        Color(0xFFEF9A9A),
+        Color(0xFFA5D6A7),
+        Color(0xFFFFCC80),
+        Color(0xFF90CAF9),
+        Color(0xFFCE93D8)
+    )
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun BuyerDashboardScreenPreview() {
-    AgroConectaTheme {
-        BuyerDashboardScreen()
-    }
+    return colors[index % colors.size]
+}
+
+private fun Number.toFormattedPrice(): String {
+    return "$${"%,.0f".format(this.toDouble())}"
 }
