@@ -42,7 +42,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.data.model.Farmer
 import com.agroconecta.mobile.ui.theme.Black
 import com.agroconecta.mobile.ui.theme.GrayLight
 import com.agroconecta.mobile.ui.theme.GrayMedium
