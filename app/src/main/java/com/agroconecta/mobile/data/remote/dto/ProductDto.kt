@@ -1,6 +1,6 @@
-package com.agroconecta.mobile.data.model
+package com.agroconecta.mobile.data.remote.dto
 
-data class Product(
+data class ProductDto(
     val id: Int,
     val name: String,
     val category: String,
@@ -10,9 +10,8 @@ data class Product(
     val minOrder: Float,
     val location: String,
     val rating: Float,
-    val imageUrl: String = "",
-    val description: String = "",
+    val imageUrl: String?,
+    val description: String?,
     val farmerId: Int,
-    val status: ProductStatus = ProductStatus.ACTIVE
+    val status: String
 )
-

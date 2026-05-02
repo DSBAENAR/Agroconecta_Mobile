@@ -29,7 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.data.DataPurchases
+import com.agroconecta.mobile.data.mock.DataPurchases
 import com.agroconecta.mobile.data.model.Purchase
 import com.agroconecta.mobile.data.model.PurchaseStatus
 import com.agroconecta.mobile.ui.theme.GrayDark

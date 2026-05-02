@@ -1,12 +1,14 @@
 package com.agroconecta.mobile.data.model
 
-enum class UserStatus {
-    ACTIVE,
-    INACTIVE,
+enum class PurchaseStatus {
+    DELIVERED,
+    IN_TRANSIT,
+    PENDING,
+    CANCELLED,
     UNKNOWN;
 
     companion object {
-        fun from(value: String): UserStatus {
+        fun from(value: String): PurchaseStatus {
             return entries.firstOrNull {
                 it.name.equals(value, ignoreCase = true)
             } ?: UNKNOWN
