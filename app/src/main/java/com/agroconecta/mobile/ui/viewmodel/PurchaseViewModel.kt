@@ -1,6 +1,8 @@
 package com.agroconecta.mobile.ui.viewmodel
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agroconecta.mobile.data.model.Purchase
@@ -21,19 +23,33 @@ class PurchaseViewModel @Inject constructor(
     var isLoading by mutableStateOf(false)
         private set
 
+    /**
+     * Método general utilizado por BuyerDashboardScreen.
+     * Carga las compras recientes del comprador.
+     */
+    fun loadPurchases() {
+        loadRecentPurchases()
+    }
+
     fun loadPurchasesByBuyer(buyerId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             isLoading = true
-            purchases = repository.getPurchasesByBuyer(buyerId)
-            isLoading = false
+            try {
+                purchases = repository.getPurchasesByBuyer(buyerId)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
     fun loadRecentPurchases() {
         viewModelScope.launch(Dispatchers.IO) {
             isLoading = true
-            purchases = repository.getRecentPurchases()
-            isLoading = false
+            try {
+                purchases = repository.getRecentPurchases()
+            } finally {
+                isLoading = false
+            }
         }
     }
 }

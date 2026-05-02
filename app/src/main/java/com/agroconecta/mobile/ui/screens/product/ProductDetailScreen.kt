@@ -1,35 +1,28 @@
 package com.agroconecta.mobile.ui.screens.product
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.data.mock.DataProducts
+import androidx.compose.ui.unit.*
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
 
 @Composable
 fun ProductDetailScreen(
@@ -37,27 +30,50 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     onAddToCartClick: (String) -> Unit,
     onContactFarmerClick: (String) -> Unit,
-    onViewFarmerClick: (String) -> Unit
+    onViewFarmerClick: (String) -> Unit,
+    viewModel: ProductViewModel = hiltViewModel()
 ) {
-    val product = DataProducts.getProductById(productId)
+    val products = viewModel.products
 
-    if (product == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Producto no encontrado")
+    LaunchedEffect(Unit) {
+        if (products.isEmpty()) {
+            viewModel.loadProducts()
         }
-        return
     }
 
-    ProductDetailContent(
-        product = product,
-        onBackClick = onBackClick,
-        onAddToCartClick = onAddToCartClick,
-        onContactFarmerClick = onContactFarmerClick,
-        onViewFarmerClick = onViewFarmerClick
-    )
+    val product = remember(products, productId) {
+        products.find { it.id.toString() == productId }
+    }
+
+    when {
+        viewModel.isLoading && product == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = GreenPrimary)
+            }
+        }
+
+        product == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Producto no encontrado")
+            }
+        }
+
+        else -> {
+            ProductDetailContent(
+                product = product,
+                onBackClick = onBackClick,
+                onAddToCartClick = onAddToCartClick,
+                onContactFarmerClick = onContactFarmerClick,
+                onViewFarmerClick = onViewFarmerClick
+            )
+        }
+    }
 }
 
 @Composable
@@ -138,21 +154,21 @@ private fun ProductDetailContent(
                     name = "Agricultor AgroConecta",
                     subtitle = "Productor verificado",
                     onViewFarmerClick = {
-                        onViewFarmerClick(product.farmerId)
+                        onViewFarmerClick(product.farmerId.toString())
                     }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 AddToCartButton(
-                    productId = product.id,
+                    productId = product.id.toString(),
                     onAddToCartClick = onAddToCartClick
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 ContactFarmerButton(
-                    productId = product.id,
+                    productId = product.id.toString(),
                     onContactFarmerClick = onContactFarmerClick
                 )
 
@@ -167,7 +183,7 @@ private fun BackButton(onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onBackClick() }
+            .clickable(onClick = onBackClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -204,7 +220,7 @@ private fun ProductImagePlaceholder() {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Eco,
+                Icons.Default.Eco,
                 contentDescription = null,
                 tint = GreenPrimary,
                 modifier = Modifier.size(60.dp)
@@ -218,9 +234,7 @@ private fun CategoryAndRatingRow(
     category: String,
     rating: Double
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Pill(
             text = category,
             background = GreenPrimary,
@@ -254,7 +268,9 @@ private fun Pill(
                         GreenPrimary.copy(alpha = 0.25f),
                         RoundedCornerShape(50)
                     )
-                } else Modifier
+                } else {
+                    Modifier
+                }
             )
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
@@ -314,9 +330,7 @@ private fun InfoCardsRow(
     minOrder: String,
     location: String
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         InfoCard(
             value = availableStock,
             label = "Disponible",
@@ -356,9 +370,9 @@ private fun InfoCard(
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            icon?.let {
+            if (icon != null) {
                 Icon(
-                    it,
+                    imageVector = icon,
                     contentDescription = null,
                     tint = GreenPrimary,
                     modifier = Modifier.size(18.dp)
@@ -418,9 +432,7 @@ private fun FarmerCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
                     fontWeight = FontWeight.Bold
@@ -460,7 +472,7 @@ private fun AddToCartButton(
         ),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Icon(Icons.Default.ShoppingCart, null)
+        Icon(Icons.Default.ShoppingCart, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
         Text("Agregar al carrito")
     }
@@ -482,20 +494,8 @@ private fun ContactFarmerButton(
             contentColor = GreenPrimary
         )
     ) {
-        Icon(Icons.Outlined.ChatBubbleOutline, null)
+        Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
         Text("Contactar agricultor")
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun ProductDetailScreenPreview() {
-    ProductDetailScreen(
-        productId = "1",
-        onBackClick = {},
-        onAddToCartClick = {},
-        onContactFarmerClick = {},
-        onViewFarmerClick = {}
-    )
 }

@@ -1,27 +1,15 @@
 package com.agroconecta.mobile.ui.screens.buyer
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,80 +17,84 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.data.mock.DataPurchases
 import com.agroconecta.mobile.data.model.Purchase
 import com.agroconecta.mobile.data.model.PurchaseStatus
-import com.agroconecta.mobile.ui.theme.GrayDark
-import com.agroconecta.mobile.ui.theme.GrayLight
-import com.agroconecta.mobile.ui.theme.GrayMedium
-import com.agroconecta.mobile.ui.theme.GreenLight
-import com.agroconecta.mobile.ui.theme.GreenPrimary
-import com.agroconecta.mobile.ui.theme.OrangeLight
-import com.agroconecta.mobile.ui.theme.StatusDelivered
-import com.agroconecta.mobile.ui.theme.StatusInTransit
-import com.agroconecta.mobile.ui.theme.StatusPending
-import com.agroconecta.mobile.ui.theme.White
+import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.PurchaseViewModel
 
 @Composable
-fun BuyerDashboardScreen() {
-    val purchases = DataPurchases.getRecentPurchases()
+fun BuyerDashboardScreen(
+    viewModel: PurchaseViewModel = hiltViewModel()
+) {
+    val purchases = viewModel.purchases
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        if (purchases.isEmpty()) {
+            viewModel.loadPurchases()
+        }
+    }
 
     val totalPurchases = purchases.size
     val pendingPurchases = purchases.count {
         it.status == PurchaseStatus.PENDING
     }
-    val totalSpent = purchases.sumOf {
-        it.totalPrice
-    }
+    val totalSpent = purchases.sumOf { it.totalPrice }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = GrayLight
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(16.dp)
-        ) {
-            DashboardHeader()
+        if (viewModel.isLoading && purchases.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = GreenPrimary)
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(16.dp)
+            ) {
+                DashboardHeader()
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            StatCardsRow(
-                totalPurchases = totalPurchases,
-                pendingPurchases = pendingPurchases,
-                totalSpent = totalSpent
-            )
+                StatCardsRow(
+                    totalPurchases = totalPurchases,
+                    pendingPurchases = pendingPurchases,
+                    totalSpent = totalSpent
+                )
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Compras recientes",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = GrayDark
-            )
+                Text(
+                    text = "Compras recientes",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = GrayDark
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            if (purchases.isEmpty()) {
-                EmptyPurchasesState()
-            } else {
-                purchases.forEachIndexed { index, purchase ->
-                    PurchaseCard(
-                        purchase = purchase,
-                        avatarColor = getProductColor(index)
-                    )
+                if (purchases.isEmpty()) {
+                    EmptyPurchasesState()
+                } else {
+                    purchases.forEachIndexed { index, purchase ->
+                        PurchaseCard(
+                            purchase = purchase,
+                            avatarColor = getProductColor(index)
+                        )
 
-                    if (index < purchases.lastIndex) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        if (index < purchases.lastIndex) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -233,7 +225,7 @@ private fun PurchaseCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = purchase.productName,
+                    text = "Producto #${purchase.productId}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = GrayDark
@@ -242,7 +234,7 @@ private fun PurchaseCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = purchase.sellerName,
+                    text = "Agricultor #${purchase.farmerId}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = GrayMedium
                 )
@@ -250,7 +242,7 @@ private fun PurchaseCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "${purchase.quantity} ${purchase.unit}",
+                    text = "${purchase.quantity} unidades",
                     style = MaterialTheme.typography.bodySmall,
                     color = GrayMedium
                 )
@@ -297,6 +289,12 @@ private fun StatusBadge(
             "Cancelado",
             Color(0xFFD32F2F),
             Color(0xFFFFEBEE)
+        )
+
+        PurchaseStatus.UNKNOWN -> Triple(
+            "Desconocido",
+            GrayMedium,
+            GrayMedium.copy(alpha = 0.15f)
         )
     }
 

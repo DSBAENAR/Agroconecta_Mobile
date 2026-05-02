@@ -12,34 +12,46 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.agroconecta.mobile.data.mock.DataProducts
 import com.agroconecta.mobile.data.model.Product
-import com.agroconecta.mobile.ui.theme.Black
-import com.agroconecta.mobile.ui.theme.GrayMedium
-import com.agroconecta.mobile.ui.theme.GreenPrimary
-import com.agroconecta.mobile.ui.theme.White
+import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
 
 @Composable
 fun HomeScreen(
     onExploreClick: () -> Unit,
     onFarmerClick: () -> Unit,
-    onProductClick: (String) -> Unit = {}
+    onProductClick: (String) -> Unit = {},
+    viewModel: ProductViewModel = hiltViewModel()
 ) {
-    val topProducts = DataProducts.getTopProducts()
-    val categories = DataProducts.getCategories()
+    val products = viewModel.products
+
+    LaunchedEffect(Unit) {
+        if (products.isEmpty()) {
+            viewModel.loadProducts()
+        }
+    }
+
+    val topProducts = remember(products) {
+        products
+            .sortedByDescending { product -> product.rating }
+            .take(5)
+    }
+
+    val categories = remember(products) {
+        products
+            .map { product -> product.category }
+            .distinct()
+            .sorted()
+    }
 
     Column(
         modifier = Modifier
@@ -62,15 +74,22 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        categories.forEach { category ->
-            CategorySection(
-                category = category,
-                products = DataProducts.getProductsByCategory(category),
-                onVerTodos = onExploreClick,
-                onProductClick = onProductClick
-            )
+        categories.forEach { category: String ->
 
-            Spacer(modifier = Modifier.height(28.dp))
+            val categoryProducts = products.filter { product: Product ->
+                product.category.equals(category, ignoreCase = true)
+            }
+
+            if (categoryProducts.isNotEmpty()) {
+                CategorySection(
+                    category = category,
+                    products = categoryProducts,
+                    onVerTodos = onExploreClick,
+                    onProductClick = onProductClick
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+            }
         }
     }
 }
@@ -108,12 +127,13 @@ private fun ProductRow(
     ) {
         items(
             items = products,
-            key = { it.id }
+            key = { product -> product.id }
         ) { product ->
+
             ProductCard(
                 product = product,
                 onClick = {
-                    onProductClick(product.id)
+                    onProductClick(product.id.toString())
                 }
             )
         }
