@@ -5,7 +5,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -35,7 +35,8 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route.orEmpty()
 
-    var isFarmerUser by remember { mutableStateOf(false) }
+    // ✅ rememberSaveable: sobrevive rotación de pantalla
+    var isFarmerUser by rememberSaveable { mutableStateOf(false) }
 
     val showBottomBar = currentRoute in listOf(
         Screen.BuyerHome.route,
@@ -238,12 +239,8 @@ fun AppNavigation() {
                     onBackClick = {
                         navController.popBackStack()
                     },
-                    onAddToCartClick = {
-                        // Aquí irá la lógica del carrito
-                    },
-                    onContactFarmerClick = {
-                        // Aquí irá la lógica del chat/contacto
-                    },
+                    onAddToCartClick = {},
+                    onContactFarmerClick = {},
                     onViewFarmerClick = {
                         navController.navigate(Screen.Profile.route)
                     }

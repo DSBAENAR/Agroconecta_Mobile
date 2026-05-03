@@ -2,14 +2,14 @@ package com.agroconecta.mobile.data.repository
 
 import com.agroconecta.mobile.data.mock.MockPurchases
 import com.agroconecta.mobile.data.model.Purchase
-import com.agroconecta.mobile.data.remote.RetrofitInstance
+import com.agroconecta.mobile.data.remote.api.PurchaseApiService
 import com.agroconecta.mobile.data.remote.mapper.toDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class PurchaseRepositoryImpl : PurchaseRepository {
-
-    private val api = RetrofitInstance.purchaseApi
+class PurchaseRepositoryImpl(
+    private val api: PurchaseApiService
+) : PurchaseRepository {
 
     override suspend fun getAllPurchases(): List<Purchase> =
         withContext(Dispatchers.IO) {
@@ -46,12 +46,9 @@ class PurchaseRepositoryImpl : PurchaseRepository {
     override suspend fun getPurchasesByBuyer(buyerId: Int): List<Purchase> =
         withContext(Dispatchers.IO) {
             try {
-                api.getPurchasesByBuyer(buyerId)
-                    .map { it.toDomain() }
+                api.getPurchasesByBuyer(buyerId).map { it.toDomain() }
             } catch (_: Exception) {
-                MockPurchases.purchases.filter {
-                    it.buyerId == buyerId
-                }
+                MockPurchases.purchases.filter { it.buyerId == buyerId }
             }
         }
 }

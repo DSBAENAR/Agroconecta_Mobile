@@ -1,5 +1,6 @@
 package com.agroconecta.mobile.ui.viewmodel
 
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agroconecta.mobile.data.model.Product
@@ -7,8 +8,6 @@ import com.agroconecta.mobile.data.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.compose.runtime.*
-import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
@@ -28,8 +27,10 @@ class ProductViewModel @Inject constructor(
         loadProducts()
     }
 
+    // ✅ Sin Dispatchers.IO — el repositorio ya usa withContext internamente
+    // El estado de Compose SOLO puede modificarse en el hilo principal
     fun loadProducts() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             isLoading = true
             products = repository.getAllProducts()
             isLoading = false
@@ -37,7 +38,7 @@ class ProductViewModel @Inject constructor(
     }
 
     fun loadProductById(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             isLoading = true
             selectedProduct = repository.getProductById(id)
             isLoading = false
@@ -45,7 +46,7 @@ class ProductViewModel @Inject constructor(
     }
 
     fun searchProducts(query: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             isLoading = true
             products = repository.searchProducts(query)
             isLoading = false

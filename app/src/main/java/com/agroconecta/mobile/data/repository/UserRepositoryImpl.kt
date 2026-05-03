@@ -2,14 +2,14 @@ package com.agroconecta.mobile.data.repository
 
 import com.agroconecta.mobile.data.model.Buyer
 import com.agroconecta.mobile.data.model.Farmer
-import com.agroconecta.mobile.data.remote.RetrofitInstance
+import com.agroconecta.mobile.data.remote.api.UserApiService
 import com.agroconecta.mobile.data.remote.mapper.toDomain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class UserRepositoryImpl : UserRepository {
-
-    private val api = RetrofitInstance.userApi
+class UserRepositoryImpl(
+    private val api: UserApiService
+) : UserRepository {
 
     override suspend fun getFarmerById(id: Int): Farmer? =
         withContext(Dispatchers.IO) {

@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
@@ -60,33 +60,17 @@ fun MarketplaceScreen(
             .sorted()
     }
 
-    val filteredProducts = remember(
-        products,
-        searchQuery,
-        selectedCategory
-    ) {
+    val filteredProducts = remember(products, searchQuery, selectedCategory) {
         products.filter { product ->
             val matchesCategory =
                 selectedCategory == "Todos" ||
-                        product.category.equals(
-                            selectedCategory,
-                            ignoreCase = true
-                        )
+                        product.category.equals(selectedCategory, ignoreCase = true)
 
             val matchesSearch =
                 searchQuery.isBlank() ||
-                        product.name.contains(
-                            searchQuery,
-                            ignoreCase = true
-                        ) ||
-                        product.category.contains(
-                            searchQuery,
-                            ignoreCase = true
-                        ) ||
-                        product.location.contains(
-                            searchQuery,
-                            ignoreCase = true
-                        )
+                        product.name.contains(searchQuery, ignoreCase = true) ||
+                        product.category.contains(searchQuery, ignoreCase = true) ||
+                        product.location.contains(searchQuery, ignoreCase = true)
 
             matchesCategory && matchesSearch
         }
@@ -134,13 +118,9 @@ fun MarketplaceScreen(
                 ) {
                     OutlinedTextField(
                         value = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-                        },
+                        onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text("Buscar productos...")
-                        },
+                        placeholder = { Text("Buscar productos...") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
@@ -158,12 +138,8 @@ fun MarketplaceScreen(
                         itemsIndexed(categories) { _, category ->
                             FilterChip(
                                 selected = selectedCategory == category,
-                                onClick = {
-                                    selectedCategory = category
-                                },
-                                label = {
-                                    Text(category)
-                                }
+                                onClick = { selectedCategory = category },
+                                label = { Text(category) }
                             )
                         }
                     }
@@ -183,21 +159,15 @@ fun MarketplaceScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(
+                // ✅ itemsIndexed — sin indexOf O(n) en cada recomposición
+                itemsIndexed(
                     items = filteredProducts,
-                    key = { product -> product.id }
-                ) { product ->
-
-                    val index = filteredProducts.indexOf(product)
-
+                    key = { _, product -> product.id }
+                ) { index, product ->
                     MarketplaceProductCard(
                         product = product,
-                        placeholderColor = placeholderColors[
-                            index % placeholderColors.size
-                        ],
-                        onClick = {
-                            onProductClick(product.id.toString())
-                        }
+                        placeholderColor = placeholderColors[index % placeholderColors.size],
+                        onClick = { onProductClick(product.id.toString()) }
                     )
                 }
             }
@@ -215,12 +185,8 @@ private fun MarketplaceProductCard(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column {
             Box(
@@ -238,9 +204,7 @@ private fun MarketplaceProductCard(
                 )
             }
 
-            Column(
-                modifier = Modifier.padding(14.dp)
-            ) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -252,18 +216,14 @@ private fun MarketplaceProductCard(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = GrayMedium,
                         modifier = Modifier.size(15.dp)
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Text(
                         text = product.location,
                         style = MaterialTheme.typography.bodySmall,
@@ -284,18 +244,14 @@ private fun MarketplaceProductCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(15.dp)
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Text(
                         text = product.rating.toString(),
                         style = MaterialTheme.typography.bodySmall,

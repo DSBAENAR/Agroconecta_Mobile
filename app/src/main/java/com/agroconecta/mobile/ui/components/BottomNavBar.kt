@@ -2,16 +2,7 @@ package com.agroconecta.mobile.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -28,8 +19,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.agroconecta.mobile.ui.theme.GreenPrimary
+import com.agroconecta.mobile.ui.navigation.Screen
 import com.agroconecta.mobile.ui.theme.GrayMedium
+import com.agroconecta.mobile.ui.theme.GreenPrimary
 import com.agroconecta.mobile.ui.theme.White
 
 data class BottomNavItem(
@@ -44,10 +36,10 @@ fun BuyerBottomNavBar(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
-        BottomNavItem("INICIO", Icons.Filled.Home, "buyer_home"),
-        BottomNavItem("BUSCAR", Icons.Filled.Search, "marketplace"),
-        BottomNavItem("PANEL", Icons.Outlined.BarChart, "buyer_dashboard"),
-        BottomNavItem("PERFIL", Icons.Filled.Person, "profile")
+        BottomNavItem("INICIO", Icons.Filled.Home,    Screen.BuyerHome.route),    // ✅
+        BottomNavItem("BUSCAR", Icons.Filled.Search,  Screen.Marketplace.route),  // ✅
+        BottomNavItem("PANEL",  Icons.Outlined.BarChart, Screen.BuyerDashboard.route), // ✅
+        BottomNavItem("PERFIL", Icons.Filled.Person,  Screen.Profile.route)       // ✅
     )
     BottomNavBarContent(items = items, currentRoute = currentRoute, onNavigate = onNavigate)
 }
@@ -58,10 +50,10 @@ fun FarmerBottomNavBar(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
-        BottomNavItem("INICIO", Icons.Filled.Home, "farmer_home"),
-        BottomNavItem("BUSCAR", Icons.Filled.Search, "marketplace"),
-        BottomNavItem("PANEL", Icons.Outlined.BarChart, "farmer_dashboard"),
-        BottomNavItem("PERFIL", Icons.Filled.Person, "profile")
+        BottomNavItem("INICIO", Icons.Filled.Home,    Screen.FarmerHome.route),      // ✅
+        BottomNavItem("BUSCAR", Icons.Filled.Search,  Screen.Marketplace.route),     // ✅
+        BottomNavItem("PANEL",  Icons.Outlined.BarChart, Screen.FarmerDashboard.route), // ✅
+        BottomNavItem("PERFIL", Icons.Filled.Person,  Screen.Profile.route)          // ✅
     )
     BottomNavBarContent(items = items, currentRoute = currentRoute, onNavigate = onNavigate)
 }
@@ -78,7 +70,6 @@ private fun BottomNavBarContent(
             .background(White)
             .navigationBarsPadding()
     ) {
-        // Top border
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,10 +85,9 @@ private fun BottomNavBarContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEach { item ->
-                val selected = currentRoute == item.route
                 NavItem(
                     item = item,
-                    selected = selected,
+                    selected = currentRoute == item.route,
                     onClick = { onNavigate(item.route) }
                 )
             }
@@ -119,7 +109,6 @@ private fun NavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // Icon pill — filled green when selected, transparent when not
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))

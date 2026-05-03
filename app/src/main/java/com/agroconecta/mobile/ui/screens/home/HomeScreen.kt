@@ -1,7 +1,6 @@
 package com.agroconecta.mobile.ui.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -14,13 +13,13 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
 import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
@@ -33,64 +32,84 @@ fun HomeScreen(
     viewModel: ProductViewModel = hiltViewModel()
 ) {
     val products = viewModel.products
-
-    LaunchedEffect(Unit) {
-        if (products.isEmpty()) {
-            viewModel.loadProducts()
-        }
-    }
+    val isLoading = viewModel.isLoading
 
     val topProducts = remember(products) {
-        products
-            .sortedByDescending { product -> product.rating }
-            .take(5)
+        products.sortedByDescending { it.rating }.take(5)
     }
 
     val categories = remember(products) {
-        products
-            .map { product -> product.category }
-            .distinct()
-            .sorted()
+        products.map { it.category }.distinct().sorted()
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(White)
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = 20.dp)
     ) {
-        SectionHeader(
-            title = "Top Productos",
-            onVerTodos = onExploreClick
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        ProductRow(
-            products = topProducts,
-            onProductClick = onProductClick
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        categories.forEach { category: String ->
-
-            val categoryProducts = products.filter { product: Product ->
-                product.category.equals(category, ignoreCase = true)
-            }
-
-            if (categoryProducts.isNotEmpty()) {
-                CategorySection(
-                    category = category,
-                    products = categoryProducts,
-                    onVerTodos = onExploreClick,
-                    onProductClick = onProductClick
+        if (isLoading && products.isEmpty()) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = GreenPrimary
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 20.dp)
+            ) {
+                SectionHeader(
+                    title = "Top Productos",
+                    onVerTodos = onExploreClick
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (topProducts.isEmpty()) {
+                    EmptySection()
+                } else {
+                    ProductRow(
+                        products = topProducts,
+                        onProductClick = onProductClick
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(28.dp))
+
+                categories.forEach { category ->
+                    val categoryProducts = products.filter {
+                        it.category.equals(category, ignoreCase = true)
+                    }
+
+                    if (categoryProducts.isNotEmpty()) {
+                        CategorySection(
+                            category = category,
+                            products = categoryProducts,
+                            onVerTodos = onExploreClick,
+                            onProductClick = onProductClick
+                        )
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun EmptySection() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No hay productos disponibles",
+            style = MaterialTheme.typography.bodyMedium,
+            color = GrayMedium
+        )
     }
 }
 
@@ -127,14 +146,11 @@ private fun ProductRow(
     ) {
         items(
             items = products,
-            key = { product -> product.id }
+            key = { it.id }
         ) { product ->
-
             ProductCard(
                 product = product,
-                onClick = {
-                    onProductClick(product.id.toString())
-                }
+                onClick = { onProductClick(product.id.toString()) }
             )
         }
     }
@@ -174,16 +190,11 @@ private fun ProductCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .width(190.dp)
-            .clickable(onClick = onClick),
+        onClick = onClick,
+        modifier = Modifier.width(190.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        )
+        colors = CardDefaults.cardColors(containerColor = White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column {
             Box(
@@ -201,9 +212,7 @@ private fun ProductCard(
                 )
             }
 
-            Column(
-                modifier = Modifier.padding(14.dp)
-            ) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -215,23 +224,18 @@ private fun ProductCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = GrayMedium,
                         modifier = Modifier.size(16.dp)
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Text(
                         text = product.location,
                         style = MaterialTheme.typography.bodySmall,
-                        color = GrayMedium,
-                        maxLines = 1
+                        color = GrayMedium
                     )
                 }
 
@@ -246,18 +250,14 @@ private fun ProductCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(16.dp)
                     )
-
                     Spacer(modifier = Modifier.width(4.dp))
-
                     Text(
                         text = product.rating.toString(),
                         style = MaterialTheme.typography.bodySmall,

@@ -7,7 +7,6 @@ import com.agroconecta.mobile.data.model.Buyer
 import com.agroconecta.mobile.data.model.Farmer
 import com.agroconecta.mobile.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,20 +25,20 @@ class UserViewModel @Inject constructor(
         private set
 
     fun login(email: String, password: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { // ✅ Sin Dispatchers.IO
             val result = repository.login(email, password)
             isLoggedIn = result != null
         }
     }
 
     fun loadFarmer(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { // ✅ Sin Dispatchers.IO
             currentFarmer = repository.getFarmerById(id)
         }
     }
 
     fun loadBuyer(id: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { // ✅ Sin Dispatchers.IO
             currentBuyer = repository.getBuyerById(id)
         }
     }

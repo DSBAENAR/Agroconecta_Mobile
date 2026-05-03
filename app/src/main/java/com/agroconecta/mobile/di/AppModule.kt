@@ -1,5 +1,9 @@
 package com.agroconecta.mobile.di
 
+import com.agroconecta.mobile.data.remote.RetrofitInstance
+import com.agroconecta.mobile.data.remote.api.ProductApiService
+import com.agroconecta.mobile.data.remote.api.PurchaseApiService
+import com.agroconecta.mobile.data.remote.api.UserApiService
 import com.agroconecta.mobile.data.repository.ProductRepository
 import com.agroconecta.mobile.data.repository.ProductRepositoryImpl
 import com.agroconecta.mobile.data.repository.PurchaseRepository
@@ -16,18 +20,38 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    // ✅ Proveemos las APIs de Retrofit como dependencias inyectables
     @Provides
     @Singleton
-    fun provideProductRepository(): ProductRepository =
-        ProductRepositoryImpl()
+    fun provideProductApiService(): ProductApiService =
+        RetrofitInstance.productApi
 
     @Provides
     @Singleton
-    fun providePurchaseRepository(): PurchaseRepository =
-        PurchaseRepositoryImpl()
+    fun providePurchaseApiService(): PurchaseApiService =
+        RetrofitInstance.purchaseApi
 
     @Provides
     @Singleton
-    fun provideUserRepository(): UserRepository =
-        UserRepositoryImpl()
+    fun provideUserApiService(): UserApiService =
+        RetrofitInstance.userApi
+
+
+    @Provides
+    @Singleton
+    fun provideProductRepository(
+        api: ProductApiService
+    ): ProductRepository = ProductRepositoryImpl(api)
+
+    @Provides
+    @Singleton
+    fun providePurchaseRepository(
+        api: PurchaseApiService
+    ): PurchaseRepository = PurchaseRepositoryImpl(api)
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        api: UserApiService
+    ): UserRepository = UserRepositoryImpl(api)
 }

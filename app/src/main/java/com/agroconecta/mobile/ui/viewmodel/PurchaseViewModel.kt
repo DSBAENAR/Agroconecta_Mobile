@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.agroconecta.mobile.data.model.Purchase
 import com.agroconecta.mobile.data.repository.PurchaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,16 +22,12 @@ class PurchaseViewModel @Inject constructor(
     var isLoading by mutableStateOf(false)
         private set
 
-    /**
-     * Método general utilizado por BuyerDashboardScreen.
-     * Carga las compras recientes del comprador.
-     */
     fun loadPurchases() {
         loadRecentPurchases()
     }
 
     fun loadPurchasesByBuyer(buyerId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { // ✅ Sin Dispatchers.IO
             isLoading = true
             try {
                 purchases = repository.getPurchasesByBuyer(buyerId)
@@ -43,7 +38,7 @@ class PurchaseViewModel @Inject constructor(
     }
 
     fun loadRecentPurchases() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch { // ✅ Sin Dispatchers.IO
             isLoading = true
             try {
                 purchases = repository.getRecentPurchases()
