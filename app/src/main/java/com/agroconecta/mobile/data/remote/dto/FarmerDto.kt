@@ -6,5 +6,6 @@ data class FarmerDto(
     val location: String,
     val email: String,
     val phone: String,
+    val imageUrl: String?,
     val status: String
 )

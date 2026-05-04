@@ -1,31 +1,34 @@
 package com.agroconecta.mobile.ui.navigation
 
 sealed class Screen(val route: String) {
-    data object Welcome : Screen("welcome")
-    data object RoleSelection : Screen("role_selection")
 
-    data object LoginBuyer : Screen("login_buyer")
-    data object LoginFarmer : Screen("login_farmer")
+    object Welcome : Screen("welcome")
+    object RoleSelection : Screen("role_selection")
 
-    data object RegisterBuyer : Screen("register_buyer")
-    data object RegisterFarmer : Screen("register_farmer")
+    object LoginBuyer : Screen("login_buyer")
+    object LoginFarmer : Screen("login_farmer")
 
-    data object BuyerHome : Screen("buyer_home")
-    data object FarmerHome : Screen("farmer_home")
+    object RegisterBuyer : Screen("register_buyer")
+    object RegisterFarmer : Screen("register_farmer")
 
-    data object Marketplace : Screen("marketplace")
+    object BuyerHome : Screen("buyer_home")
+    object FarmerHome : Screen("farmer_home")
 
-    data object ProductDetail : Screen("product_detail/{productId}") {
-        fun createRoute(productId: String): String {
-            return "product_detail/$productId"
-        }
+    object Marketplace : Screen("marketplace")
+
+    object ProductDetail : Screen("product_detail/{productId}") {
+        fun createRoute(productId: String) = "product_detail/$productId"
     }
 
-    data object BuyerDashboard : Screen("buyer_dashboard")
-    data object FarmerDashboard : Screen("farmer_dashboard")
+    object FarmerDetail : Screen("farmer_detail/{farmerId}") {
+        fun createRoute(farmerId: String) = "farmer_detail/$farmerId"
+    }
 
-    data object AIAnalysis : Screen("ai_analysis")
-    data object CreatePublication : Screen("create_publication")
+    object Profile : Screen("profile")
 
-    data object Profile : Screen("profile")
+    object BuyerDashboard : Screen("buyer_dashboard")
+    object FarmerDashboard : Screen("farmer_dashboard")
+
+    object CreatePublication : Screen("create_publication")
+    object AIAnalysis : Screen("ai_analysis")
 }

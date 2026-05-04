@@ -4,6 +4,7 @@ import com.agroconecta.mobile.data.model.Buyer
 import com.agroconecta.mobile.data.model.Farmer
 import com.agroconecta.mobile.data.remote.api.UserApiService
 import com.agroconecta.mobile.data.remote.mapper.toDomain
+import com.agroconecta.mobile.data.mock.MockFarmers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -16,7 +17,7 @@ class UserRepositoryImpl(
             try {
                 api.getFarmerById(id).toDomain()
             } catch (_: Exception) {
-                null
+                MockFarmers.farmers.find { it.id == id }
             }
         }
 

@@ -11,6 +11,7 @@ fun FarmerDto.toDomain(): Farmer {
         location = location,
         email = email,
         phone = phone,
+        imageUrl = imageUrl,
         status = UserStatus.from(status)
     )
 }
