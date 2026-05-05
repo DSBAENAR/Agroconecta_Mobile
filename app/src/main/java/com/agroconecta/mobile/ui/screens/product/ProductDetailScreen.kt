@@ -19,25 +19,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
-import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
-import com.agroconecta.mobile.ui.viewmodel.UserViewModel
+import com.agroconecta.mobile.ui.viewmodel.*
+
 
 @Composable
 fun ProductDetailScreen(
     productId: String,
     onBackClick: () -> Unit,
-    onAddToCartClick: (String) -> Unit,
     onContactFarmerClick: (String) -> Unit,
     onViewFarmerClick: (String) -> Unit,
     viewModel: ProductViewModel = hiltViewModel(),
-    userViewModel: UserViewModel = hiltViewModel() // ✅ agregado
+    userViewModel: UserViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
     val products = viewModel.products
-    val farmer = userViewModel.currentFarmer // ✅ agregado
+    val farmer = userViewModel.currentFarmer
 
     LaunchedEffect(Unit) {
         if (products.isEmpty()) {
@@ -49,7 +48,6 @@ fun ProductDetailScreen(
         products.find { it.id.toString() == productId }
     }
 
-    // ✅ cargar agricultor real
     LaunchedEffect(product?.farmerId) {
         product?.farmerId?.let {
             userViewModel.loadFarmer(it)
@@ -72,9 +70,11 @@ fun ProductDetailScreen(
         else -> {
             ProductDetailContent(
                 product = product,
-                farmerName = farmer?.name ?: "Cargando...", // ✅ agregado
+                farmerName = farmer?.name ?: "Cargando...",
                 onBackClick = onBackClick,
-                onAddToCartClick = onAddToCartClick,
+                onAddToCart = {
+                    cartViewModel.addToCart(product)
+                },
                 onContactFarmerClick = onContactFarmerClick,
                 onViewFarmerClick = onViewFarmerClick
             )
@@ -85,12 +85,12 @@ fun ProductDetailScreen(
 @Composable
 private fun ProductDetailContent(
     product: Product,
-    farmerName: String, // ✅ agregado
+    farmerName: String,
     onBackClick: () -> Unit,
-    onAddToCartClick: (String) -> Unit,
+    onAddToCart: () -> Unit,
     onContactFarmerClick: (String) -> Unit,
     onViewFarmerClick: (String) -> Unit
-){
+) {
     val description = if (product.description.isBlank()) {
         "Producto fresco y de alta calidad, cultivado por agricultores verificados de AgroConecta."
     } else {
@@ -102,7 +102,7 @@ private fun ProductDetailContent(
         .take(2)
         .mapNotNull { it.firstOrNull()?.toString() }
         .joinToString("")
-        .uppercase();
+        .uppercase()
 
     Surface(modifier = Modifier.fillMaxSize(), color = White) {
         Column(
@@ -159,7 +159,7 @@ private fun ProductDetailContent(
 
                 Spacer(Modifier.height(24.dp))
 
-                AddToCartButton(product.id.toString(), onAddToCartClick)
+                AddToCartButton(onAddToCart)
 
                 Spacer(Modifier.height(12.dp))
 
@@ -168,6 +168,21 @@ private fun ProductDetailContent(
                 Spacer(Modifier.height(24.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun AddToCartButton(
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+    ) {
+        Icon(Icons.Default.ShoppingCart, null)
+        Spacer(Modifier.width(8.dp))
+        Text("Agregar al carrito")
     }
 }
 

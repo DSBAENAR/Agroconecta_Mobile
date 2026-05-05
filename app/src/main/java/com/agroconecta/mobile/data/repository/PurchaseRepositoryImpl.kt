@@ -3,7 +3,7 @@ package com.agroconecta.mobile.data.repository
 import com.agroconecta.mobile.data.mock.MockPurchases
 import com.agroconecta.mobile.data.model.Purchase
 import com.agroconecta.mobile.data.remote.api.PurchaseApiService
-import com.agroconecta.mobile.data.remote.mapper.toDomain
+import com.agroconecta.mobile.data.remote.mapper.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -58,6 +58,17 @@ class PurchaseRepositoryImpl(
                 api.getPurchasesByFarmer(farmerId).map { it.toDomain() }
             } catch (_: Exception) {
                 MockPurchases.purchases.filter { it.farmerId == farmerId }
+            }
+        }
+
+    override suspend fun createPurchases(purchases: List<Purchase>): List<Purchase> =
+        withContext(Dispatchers.IO) {
+            try {
+                api.createPurchases(purchases.map { it.toDto() })
+                    .map { it.toDomain() }
+            } catch (_: Exception) {
+                MockPurchases.purchases.addAll(purchases)
+                purchases
             }
         }
 

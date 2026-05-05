@@ -23,6 +23,7 @@ import com.agroconecta.mobile.ui.navigation.Screen
 import com.agroconecta.mobile.ui.theme.GrayMedium
 import com.agroconecta.mobile.ui.theme.GreenPrimary
 import com.agroconecta.mobile.ui.theme.White
+import androidx.compose.material.icons.filled.ShoppingCart
 
 data class BottomNavItem(
     val label: String,
@@ -52,6 +53,7 @@ fun AgroBottomNavBar(
         else -> listOf(
             BottomNavItem("INICIO", Icons.Filled.Home, Screen.BuyerHome.route),
             BottomNavItem("BUSCAR", Icons.Filled.Search, Screen.Marketplace.route),
+            BottomNavItem("CARRITO", Icons.Filled.ShoppingCart, Screen.Cart.route), // 👈 NUEVO
             BottomNavItem("PANEL", Icons.Outlined.BarChart, Screen.BuyerDashboard.route),
             BottomNavItem("PERFIL", Icons.Filled.Person, Screen.Profile.route),
             BottomNavItem("SALIR", Icons.Filled.ExitToApp, "logout", true)

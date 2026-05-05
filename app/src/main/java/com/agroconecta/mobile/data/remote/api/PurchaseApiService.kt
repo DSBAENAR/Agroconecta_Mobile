@@ -2,6 +2,8 @@ package com.agroconecta.mobile.data.remote.api
 
 import com.agroconecta.mobile.data.remote.dto.PurchaseDto
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Body
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -20,9 +22,13 @@ interface PurchaseApiService {
         @Query("buyerId") buyerId: Int
     ): List<PurchaseDto>
 
-    // 🔥 FIX AGREGADO
     @GET("purchases")
     suspend fun getPurchasesByFarmer(
         @Query("farmerId") farmerId: Int
+    ): List<PurchaseDto>
+
+    @POST("purchases")
+    suspend fun createPurchases(
+        @Body purchases: List<PurchaseDto>
     ): List<PurchaseDto>
 }

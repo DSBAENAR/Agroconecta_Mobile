@@ -56,4 +56,17 @@ class PurchaseViewModel @Inject constructor(
             }
         }
     }
+
+    fun createPurchases(purchases: List<Purchase>) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                val created = repository.createPurchases(purchases)
+                this@PurchaseViewModel.purchases =
+                    this@PurchaseViewModel.purchases + created
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 }

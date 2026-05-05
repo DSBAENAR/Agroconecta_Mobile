@@ -24,6 +24,21 @@ fun PurchaseDto.toDomain(): Purchase {
     )
 }
 
+fun Purchase.toDto(): PurchaseDto {
+    return PurchaseDto(
+        id = id,
+        productId = productId,
+        productName = productName,
+        farmerId = farmerId,
+        buyerId = buyerId,
+        quantity = quantity,
+        price = price,
+        totalPrice = totalPrice,
+        status = status.name,
+        createdAt = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    )
+}
+
 private fun tryParseDate(raw: String): LocalDateTime {
     val formatters = listOf(
         DateTimeFormatter.ISO_LOCAL_DATE_TIME,           // 2024-01-15T10:30:00
@@ -40,6 +55,5 @@ private fun tryParseDate(raw: String): LocalDateTime {
         }
     }
 
-    // Último recurso: fecha actual para no crashear
     return LocalDateTime.now()
 }

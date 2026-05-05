@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 object MockPurchases {
 
-    val purchases = listOf(
+    val purchases = mutableListOf(
         Purchase(
             id = 1,
             productId = 1,

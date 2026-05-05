@@ -21,6 +21,9 @@ import com.agroconecta.mobile.ui.screens.product.FarmerDetailScreen
 import com.agroconecta.mobile.ui.screens.product.ProductDetailScreen
 import com.agroconecta.mobile.ui.screens.profile.ProfileScreen
 import com.agroconecta.mobile.ui.viewmodel.UserViewModel
+import com.agroconecta.mobile.ui.screens.*
+import com.agroconecta.mobile.ui.screens.cart.CartScreen
+
 
 @Composable
 fun AppNavigation() {
@@ -38,7 +41,8 @@ fun AppNavigation() {
         Screen.Marketplace.route,
         Screen.BuyerDashboard.route,
         Screen.FarmerDashboard.route,
-        Screen.Profile.route
+        Screen.Profile.route,
+        Screen.Cart.route
     )
 
     val showBottomBar = session != null && currentRoute in bottomBarRoutes
@@ -181,6 +185,7 @@ fun AppNavigation() {
                 )
             }
 
+
             // ---------------- PRODUCT DETAIL ----------------
             composable(
                 route = Screen.ProductDetail.route,
@@ -194,12 +199,15 @@ fun AppNavigation() {
                 ProductDetailScreen(
                     productId = productId,
                     onBackClick = { navController.popBackStack() },
-                    onAddToCartClick = {},
                     onContactFarmerClick = {},
                     onViewFarmerClick = { farmerId ->
                         navController.navigate(Screen.FarmerDetail.createRoute(farmerId))
                     }
                 )
+            }
+
+            composable(Screen.Cart.route) {
+                CartScreen()
             }
 
             // ---------------- FARMER DETAIL ----------------
