@@ -2,15 +2,13 @@ package com.agroconecta.mobile.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import com.agroconecta.mobile.data.session.SessionManager
 import com.agroconecta.mobile.data.session.UserRole
-import com.agroconecta.mobile.data.session.UserSession
 import com.agroconecta.mobile.ui.components.AgroBottomNavBar
 import com.agroconecta.mobile.ui.screens.buyer.BuyerDashboardScreen
 import com.agroconecta.mobile.ui.screens.farmer.FarmerDashboardScreen
@@ -22,15 +20,17 @@ import com.agroconecta.mobile.ui.screens.onboarding.WelcomeScreen
 import com.agroconecta.mobile.ui.screens.product.FarmerDetailScreen
 import com.agroconecta.mobile.ui.screens.product.ProductDetailScreen
 import com.agroconecta.mobile.ui.screens.profile.ProfileScreen
+import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 
 @Composable
 fun AppNavigation() {
 
     val navController = rememberNavController()
+    val userViewModel: UserViewModel = hiltViewModel()
+
+    val session = userViewModel.session
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route.orEmpty()
-
-    val session = SessionManager.session
 
     val bottomBarRoutes = listOf(
         Screen.BuyerHome.route,
@@ -42,6 +42,23 @@ fun AppNavigation() {
     )
 
     val showBottomBar = session != null && currentRoute in bottomBarRoutes
+
+    // ✅ Navegación automática cuando hay sesión
+    LaunchedEffect(session) {
+        if (session != null) {
+            val route = when (session.role) {
+                UserRole.BUYER -> Screen.BuyerHome.route
+                UserRole.FARMER -> Screen.FarmerHome.route
+
+                UserRole.ADMIN -> Screen.Welcome.route
+                UserRole.UNKNOWN -> Screen.Welcome.route
+            }
+
+            navController.navigate(route) {
+                popUpTo(Screen.LoginBuyer.route) { inclusive = true }
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -58,8 +75,7 @@ fun AppNavigation() {
                         }
                     },
                     onLogout = {
-                        // ✅ LOGOUT REAL
-                        SessionManager.clearSession()
+                        userViewModel.logout()
 
                         navController.navigate(Screen.Welcome.route) {
                             popUpTo(0) { inclusive = true }
@@ -101,22 +117,8 @@ fun AppNavigation() {
             composable(Screen.LoginBuyer.route) {
                 LoginScreen(
                     isFarmer = false,
-                    onLoginClick = { email, _ ->
-
-                        SessionManager.saveSession(
-                            UserSession(
-                                userId = 1,
-                                name = "Buyer Demo",
-                                email = email,
-                                phone = "0000000000",
-                                role = UserRole.BUYER,
-                                token = "fake-token"
-                            )
-                        )
-
-                        navController.navigate(Screen.BuyerHome.route) {
-                            popUpTo(Screen.LoginBuyer.route) { inclusive = true }
-                        }
+                    onLoginClick = { email, password ->
+                        userViewModel.login(email, password)
                     },
                     onGoogleClick = {},
                     onRegisterClick = {
@@ -130,22 +132,8 @@ fun AppNavigation() {
             composable(Screen.LoginFarmer.route) {
                 LoginScreen(
                     isFarmer = true,
-                    onLoginClick = { email, _ ->
-
-                        SessionManager.saveSession(
-                            UserSession(
-                                userId = 2,
-                                name = "Farmer Demo",
-                                email = email,
-                                phone = "0000000000",
-                                role = UserRole.FARMER,
-                                token = "fake-token"
-                            )
-                        )
-
-                        navController.navigate(Screen.FarmerHome.route) {
-                            popUpTo(Screen.LoginFarmer.route) { inclusive = true }
-                        }
+                    onLoginClick = { email, password ->
+                        userViewModel.login(email, password)
                     },
                     onGoogleClick = {},
                     onRegisterClick = {

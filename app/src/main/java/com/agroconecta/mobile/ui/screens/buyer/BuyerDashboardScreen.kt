@@ -31,6 +31,16 @@ fun BuyerDashboardScreen(
     val purchases = viewModel.purchases
     val scrollState = rememberScrollState()
 
+    // ✅ Nombre real con fallback seguro
+    val userName = remember(session) {
+        when {
+            session == null -> "Usuario"
+            session.name.isNotBlank() -> session.name
+            session.email.isNotBlank() -> session.email.substringBefore("@")
+            else -> "Usuario"
+        }
+    }
+
     LaunchedEffect(session?.userId) {
         session?.userId?.let {
             viewModel.loadPurchasesByBuyer(it)
@@ -62,7 +72,7 @@ fun BuyerDashboardScreen(
                     .padding(16.dp)
             ) {
 
-                BuyerHeader(session?.name ?: "Usuario")
+                BuyerHeader(userName)
 
                 Spacer(Modifier.height(20.dp))
 
@@ -111,7 +121,7 @@ private fun BuyerHeader(name: String) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = name.firstOrNull()?.toString() ?: "U",
+                text = name.firstOrNull()?.uppercase() ?: "U",
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -216,7 +226,7 @@ private fun PurchaseCard(purchase: Purchase) {
             Column(modifier = Modifier.weight(1f)) {
 
                 Text(
-                    "Producto #${purchase.productId}",
+                    purchase.productName,
                     fontWeight = FontWeight.Bold
                 )
 

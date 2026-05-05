@@ -3,6 +3,7 @@ package com.agroconecta.mobile.data.remote.dto
 data class PurchaseDto(
     val id: Int,
     val productId: Int,
+    val productName: String,
     val farmerId: Int,
     val buyerId: Int,
     val quantity: Float,

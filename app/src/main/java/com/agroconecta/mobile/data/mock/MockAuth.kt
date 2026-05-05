@@ -8,7 +8,7 @@ object MockAuth {
     fun loginBuyer(): UserSession {
         return UserSession(
             userId = 1,
-            name = "COMPRADOR MOCK ALEJO",
+            name = "COMPRADOR MOCK ALEJO 1B",
             email = "buyer@agroconecta.com",
             phone = "+57 300 000 0001",
             role = UserRole.BUYER,

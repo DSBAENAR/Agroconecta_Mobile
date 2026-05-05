@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 data class Purchase(
     val id: Int,
     val productId: Int,
+    val productName: String,
     val farmerId: Int,
     val buyerId: Int,
     val quantity: Float,

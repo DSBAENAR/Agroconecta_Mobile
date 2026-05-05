@@ -13,6 +13,7 @@ fun PurchaseDto.toDomain(): Purchase {
     return Purchase(
         id = id,
         productId = productId,
+        productName = productName ?: "Inexistente",
         farmerId = farmerId,
         buyerId = buyerId,
         quantity = quantity,

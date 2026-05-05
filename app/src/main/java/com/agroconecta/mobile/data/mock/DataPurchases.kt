@@ -10,6 +10,7 @@ object MockPurchases {
         Purchase(
             id = 1,
             productId = 1,
+            productName = "Papa Criolla",
             farmerId = 1,
             buyerId = 1,
             quantity = 50f,
@@ -21,6 +22,7 @@ object MockPurchases {
         Purchase(
             id = 2,
             productId = 2,
+            productName = "Tomate Chonto",
             farmerId = 1,
             buyerId = 1,
             quantity = 30f,
@@ -32,6 +34,7 @@ object MockPurchases {
         Purchase(
             id = 3,
             productId = 5,
+            productName = "Zanahoria Orgánica",
             farmerId = 2,
             buyerId = 2,
             quantity = 75f,
@@ -43,6 +46,7 @@ object MockPurchases {
         Purchase(
             id = 4,
             productId = 9,
+            productName = "Aguacate Hass",
             farmerId = 3,
             buyerId = 2,
             quantity = 20f,
@@ -54,6 +58,7 @@ object MockPurchases {
         Purchase(
             id = 5,
             productId = 12,
+            productName = "Café Premium",
             farmerId = 3,
             buyerId = 3,
             quantity = 40f,
@@ -65,6 +70,7 @@ object MockPurchases {
         Purchase(
             id = 6,
             productId = 6,
+            productName = "Cebolla Larga",
             farmerId = 2,
             buyerId = 3,
             quantity = 60f,
