@@ -5,13 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.agroconecta.mobile.data.session.SessionManager
 import com.agroconecta.mobile.ui.navigation.Screen
 import com.agroconecta.mobile.ui.theme.GrayMedium
 import com.agroconecta.mobile.ui.theme.GreenPrimary
@@ -27,42 +27,51 @@ import com.agroconecta.mobile.ui.theme.White
 data class BottomNavItem(
     val label: String,
     val icon: ImageVector,
-    val route: String
+    val route: String,
+    val isLogout: Boolean = false // 👈 CLAVE
 )
 
 @Composable
-fun BuyerBottomNavBar(
+fun AgroBottomNavBar(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onLogout: () -> Unit
 ) {
-    val items = listOf(
-        BottomNavItem("INICIO", Icons.Filled.Home,    Screen.BuyerHome.route),    // ✅
-        BottomNavItem("BUSCAR", Icons.Filled.Search,  Screen.Marketplace.route),  // ✅
-        BottomNavItem("PANEL",  Icons.Outlined.BarChart, Screen.BuyerDashboard.route), // ✅
-        BottomNavItem("PERFIL", Icons.Filled.Person,  Screen.Profile.route)       // ✅
-    )
-    BottomNavBarContent(items = items, currentRoute = currentRoute, onNavigate = onNavigate)
-}
+    val session = SessionManager.session ?: return
 
-@Composable
-fun FarmerBottomNavBar(
-    currentRoute: String,
-    onNavigate: (String) -> Unit
-) {
-    val items = listOf(
-        BottomNavItem("INICIO", Icons.Filled.Home,    Screen.FarmerHome.route),      // ✅
-        BottomNavItem("BUSCAR", Icons.Filled.Search,  Screen.Marketplace.route),     // ✅
-        BottomNavItem("PANEL",  Icons.Outlined.BarChart, Screen.FarmerDashboard.route), // ✅
-        BottomNavItem("PERFIL", Icons.Filled.Person,  Screen.Profile.route)          // ✅
+    val items = when (session.role.name) {
+
+        "FARMER" -> listOf(
+            BottomNavItem("INICIO", Icons.Filled.Home, Screen.FarmerHome.route),
+            BottomNavItem("BUSCAR", Icons.Filled.Search, Screen.Marketplace.route),
+            BottomNavItem("PANEL", Icons.Outlined.BarChart, Screen.FarmerDashboard.route),
+            BottomNavItem("PERFIL", Icons.Filled.Person, Screen.Profile.route),
+            BottomNavItem("SALIR", Icons.Filled.ExitToApp, "logout", true)
+        )
+
+        else -> listOf(
+            BottomNavItem("INICIO", Icons.Filled.Home, Screen.BuyerHome.route),
+            BottomNavItem("BUSCAR", Icons.Filled.Search, Screen.Marketplace.route),
+            BottomNavItem("PANEL", Icons.Outlined.BarChart, Screen.BuyerDashboard.route),
+            BottomNavItem("PERFIL", Icons.Filled.Person, Screen.Profile.route),
+            BottomNavItem("SALIR", Icons.Filled.ExitToApp, "logout", true)
+        )
+    }
+
+    BottomNavBarContent(
+        items = items,
+        currentRoute = normalizeRoute(currentRoute),
+        onNavigate = onNavigate,
+        onLogout = onLogout
     )
-    BottomNavBarContent(items = items, currentRoute = currentRoute, onNavigate = onNavigate)
 }
 
 @Composable
 private fun BottomNavBarContent(
     items: List<BottomNavItem>,
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onLogout: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -70,6 +79,7 @@ private fun BottomNavBarContent(
             .background(White)
             .navigationBarsPadding()
     ) {
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -84,11 +94,18 @@ private fun BottomNavBarContent(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             items.forEach { item ->
                 NavItem(
                     item = item,
-                    selected = currentRoute == item.route,
-                    onClick = { onNavigate(item.route) }
+                    selected = normalizeRoute(currentRoute) == normalizeRoute(item.route),
+                    onClick = {
+                        if (item.isLogout) {
+                            onLogout() // 👈 AQUÍ
+                        } else {
+                            onNavigate(item.route)
+                        }
+                    }
                 )
             }
         }
@@ -109,6 +126,7 @@ private fun NavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
@@ -130,4 +148,10 @@ private fun NavItem(
             color = if (selected) GreenPrimary else GrayMedium
         )
     }
+}
+
+private fun normalizeRoute(route: String): String {
+    return route
+        .substringBefore("/")
+        .substringBefore("?")
 }

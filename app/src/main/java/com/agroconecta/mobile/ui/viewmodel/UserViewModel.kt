@@ -1,11 +1,14 @@
 package com.agroconecta.mobile.ui.viewmodel
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agroconecta.mobile.data.model.Buyer
 import com.agroconecta.mobile.data.model.Farmer
 import com.agroconecta.mobile.data.repository.UserRepository
+import com.agroconecta.mobile.data.session.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,25 +24,35 @@ class UserViewModel @Inject constructor(
     var currentBuyer by mutableStateOf<Buyer?>(null)
         private set
 
-    var isLoggedIn by mutableStateOf(false)
+    var isLoading by mutableStateOf(false)
         private set
 
+    val isLoggedIn: Boolean
+        get() = SessionManager.isLoggedIn()
+
     fun login(email: String, password: String) {
-        viewModelScope.launch { // ✅ Sin Dispatchers.IO
-            val result = repository.login(email, password)
-            isLoggedIn = result != null
+        viewModelScope.launch {
+            val session = repository.login(email, password)
+
+            if (session != null) {
+                SessionManager.saveSession(session)
+            }
         }
     }
 
     fun loadFarmer(id: Int) {
-        viewModelScope.launch { // ✅ Sin Dispatchers.IO
+        viewModelScope.launch {
+            isLoading = true
             currentFarmer = repository.getFarmerById(id)
+            isLoading = false
         }
     }
 
     fun loadBuyer(id: Int) {
-        viewModelScope.launch { // ✅ Sin Dispatchers.IO
+        viewModelScope.launch {
+            isLoading = true
             currentBuyer = repository.getBuyerById(id)
+            isLoading = false
         }
     }
 }

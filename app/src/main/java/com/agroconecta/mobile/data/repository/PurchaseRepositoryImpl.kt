@@ -51,4 +51,14 @@ class PurchaseRepositoryImpl(
                 MockPurchases.purchases.filter { it.buyerId == buyerId }
             }
         }
+
+    override suspend fun getPurchasesByFarmer(farmerId: Int): List<Purchase> =
+        withContext(Dispatchers.IO) {
+            try {
+                api.getPurchasesByFarmer(farmerId).map { it.toDomain() }
+            } catch (_: Exception) {
+                MockPurchases.purchases.filter { it.farmerId == farmerId }
+            }
+        }
+
 }

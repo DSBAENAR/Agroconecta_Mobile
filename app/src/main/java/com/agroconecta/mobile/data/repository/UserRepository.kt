@@ -1,5 +1,6 @@
 package com.agroconecta.mobile.data.repository
 
+import com.agroconecta.mobile.data.session.UserSession
 import com.agroconecta.mobile.data.model.Buyer
 import com.agroconecta.mobile.data.model.Farmer
 
@@ -9,5 +10,5 @@ interface UserRepository {
 
     suspend fun getBuyerById(id: Int): Buyer?
 
-    suspend fun login(email: String, password: String): Any?
+    suspend fun login(email: String, password: String): UserSession?
 }

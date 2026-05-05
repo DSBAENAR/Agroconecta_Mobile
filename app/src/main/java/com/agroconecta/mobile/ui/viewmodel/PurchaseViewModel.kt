@@ -1,8 +1,6 @@
 package com.agroconecta.mobile.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agroconecta.mobile.data.model.Purchase
@@ -27,7 +25,7 @@ class PurchaseViewModel @Inject constructor(
     }
 
     fun loadPurchasesByBuyer(buyerId: Int) {
-        viewModelScope.launch { // ✅ Sin Dispatchers.IO
+        viewModelScope.launch {
             isLoading = true
             try {
                 purchases = repository.getPurchasesByBuyer(buyerId)
@@ -37,8 +35,19 @@ class PurchaseViewModel @Inject constructor(
         }
     }
 
+    fun loadPurchasesByFarmer(farmerId: Int) {
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                purchases = repository.getPurchasesByFarmer(farmerId)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
     fun loadRecentPurchases() {
-        viewModelScope.launch { // ✅ Sin Dispatchers.IO
+        viewModelScope.launch {
             isLoading = true
             try {
                 purchases = repository.getRecentPurchases()

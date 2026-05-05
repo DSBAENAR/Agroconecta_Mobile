@@ -1,76 +1,95 @@
 package com.agroconecta.mobile.ui.screens.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agroconecta.mobile.data.model.Farmer
-import com.agroconecta.mobile.data.model.UserStatus
-import com.agroconecta.mobile.ui.theme.Black
-import com.agroconecta.mobile.ui.theme.GrayLight
-import com.agroconecta.mobile.ui.theme.GrayMedium
-import com.agroconecta.mobile.ui.theme.GreenDark
-import com.agroconecta.mobile.ui.theme.GreenLight
-import com.agroconecta.mobile.ui.theme.GreenPrimary
-import com.agroconecta.mobile.ui.theme.White
-
-// ---------------------------------------------------------------------------
-// SAMPLE DATA (solo para preview)
-// ---------------------------------------------------------------------------
-
-private val sampleFarmer = Farmer(
-    id = 1,
-    name = "Juan Pérez",
-    location = "Boyacá, Colombia",
-    email = "juan.perez@email.com",
-    phone = "+57 310 123 4567",
-    status = UserStatus.ACTIVE
-)
-
-// ---------------------------------------------------------------------------
-// SCREEN
-// ---------------------------------------------------------------------------
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.agroconecta.mobile.data.session.SessionManager
+import com.agroconecta.mobile.data.session.UserRole
+import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 
 @Composable
 fun ProfileScreen(
-    isFarmer: Boolean = false,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    viewModel: UserViewModel = hiltViewModel()
 ) {
-    if (isFarmer) {
-        FarmerProfileContent(farmer = sampleFarmer, onEditProfileClick = onEditProfileClick)
-    } else {
-        BuyerProfileContent(onEditProfileClick = onEditProfileClick)
+
+    val session = SessionManager.session
+    val farmer = viewModel.currentFarmer
+    val buyer = viewModel.currentBuyer
+    val isLoading = viewModel.isLoading
+
+    LaunchedEffect(session?.userId) {
+        val id = session?.userId ?: return@LaunchedEffect
+
+        when (session.role) {
+            UserRole.FARMER -> viewModel.loadFarmer(id)
+            UserRole.BUYER -> viewModel.loadBuyer(id)
+            else -> {}
+        }
+    }
+
+    when (session?.role) {
+
+        UserRole.FARMER -> {
+            when {
+                isLoading -> LoadingState()
+                farmer == null -> ErrorState()
+                else -> ProfileContent(
+                    name = farmer.name,
+                    email = farmer.email,
+                    phone = farmer.phone,
+                    location = farmer.location,
+                    role = "Agricultor",
+                    onEditProfileClick = onEditProfileClick
+                )
+            }
+        }
+
+        UserRole.BUYER -> {
+            when {
+                isLoading -> LoadingState()
+                buyer == null -> ErrorState()
+                else -> ProfileContent(
+                    name = buyer.name,
+                    email = buyer.email,
+                    phone = buyer.phone,
+                    location = null,
+                    role = "Comprador",
+                    onEditProfileClick = onEditProfileClick
+                )
+            }
+        }
+
+        else -> LoadingState()
     }
 }
 
-// ---------------------------------------------------------------------------
-// FARMER (FIXED)
-// ---------------------------------------------------------------------------
+/* ---------------- UI ---------------- */
 
 @Composable
-private fun FarmerProfileContent(
-    farmer: Farmer,
+fun ProfileContent(
+    name: String,
+    email: String,
+    phone: String,
+    location: String?,
+    role: String,
     onEditProfileClick: () -> Unit
 ) {
-    Scaffold(containerColor = White) { innerPadding ->
+    Scaffold { innerPadding ->
 
         Column(
             modifier = Modifier
@@ -81,213 +100,116 @@ private fun FarmerProfileContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            ProfileAvatarSimple(name = farmer.name)
+            Avatar(name)
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-            ProfileName(name = farmer.name)
+            Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
 
-            RoleBadge(label = "Agricultor")
+            RoleBadge(role)
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(Modifier.height(28.dp))
 
-            InfoSection(
-                location = farmer.location,
-                email = farmer.email,
-                phone = farmer.phone
-            )
+            InfoCard(location, email, phone)
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-            EditProfileButton(onClick = onEditProfileClick)
+            Button(
+                onClick = onEditProfileClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GreenPrimary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Editar perfil")
+            }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// BUYER (LO DEJAMOS SIMPLE PARA NO ROMPER)
-// ---------------------------------------------------------------------------
+/* ---------------- COMPONENTS ---------------- */
 
 @Composable
-private fun BuyerProfileContent(onEditProfileClick: () -> Unit) {
-    Scaffold(containerColor = White) { innerPadding ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            ProfileAvatarSimple(name = "Carlos Martínez")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ProfileName(name = "Carlos Martínez")
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            RoleBadge(label = "Comprador")
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            InfoSection(
-                location = "Bogotá, Colombia",
-                email = "carlos.m@email.com",
-                phone = "+57 315 987 6543"
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            EditProfileButton(onClick = onEditProfileClick)
-        }
-    }
-}
-
-// ---------------------------------------------------------------------------
-// AVATAR SIMPLE (SIN INITIALS DEPENDENCY)
-// ---------------------------------------------------------------------------
-
-@Composable
-private fun ProfileAvatarSimple(name: String) {
+private fun Avatar(name: String) {
 
     val initials = name
+        .trim()
         .split(" ")
         .take(2)
-        .joinToString("") { it.first().uppercase() }
+        .joinToString("") { it.firstOrNull()?.uppercase() ?: "" }
+        .ifEmpty { "U" }
 
     Box(
-        contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(104.dp)
+            .size(96.dp)
             .clip(CircleShape)
-            .background(GreenPrimary)
+            .background(GreenPrimary),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = initials,
-            color = White,
-            fontSize = 38.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Text(initials, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
     }
 }
 
-// ---------------------------------------------------------------------------
-// NAME
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun ProfileName(name: String) {
-    Text(
-        text = name,
-        style = MaterialTheme.typography.headlineMedium,
-        color = Black,
-        textAlign = TextAlign.Center
-    )
-}
-
-// ---------------------------------------------------------------------------
-// ROLE BADGE
-// ---------------------------------------------------------------------------
-
-@Composable
-private fun RoleBadge(label: String) {
+private fun RoleBadge(role: String) {
     Box(
         modifier = Modifier
-            .border(1.5.dp, GreenPrimary, RoundedCornerShape(50))
-            .padding(horizontal = 14.dp, vertical = 5.dp)
+            .clip(RoundedCornerShape(50))
+            .background(GreenLight)
+            .padding(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        Text(
-            text = label,
-            color = GreenPrimary,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
-}
-
-// ---------------------------------------------------------------------------
-// INFO SECTION
-// ---------------------------------------------------------------------------
-
-@Composable
-private fun InfoSection(
-    location: String,
-    email: String,
-    phone: String
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-
-        SectionHeader("Información")
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        InfoRow(Icons.Filled.LocationOn, location)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        InfoRow(Icons.Filled.Email, email)
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        InfoRow(Icons.Filled.Phone, phone)
+        Text(role, color = GreenPrimary, fontWeight = FontWeight.SemiBold)
     }
 }
 
 @Composable
-private fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+private fun InfoCard(location: String?, email: String, phone: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            location?.let {
+                InfoRow("📍", it)
+                Spacer(Modifier.height(12.dp))
+            }
+
+            InfoRow("✉️", email)
+            Spacer(Modifier.height(12.dp))
+
+            InfoRow("📞", phone)
+        }
+    }
+}
+
+@Composable
+private fun InfoRow(icon: String, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(text, color = Black)
+        Text(icon)
+        Spacer(Modifier.width(10.dp))
+        Text(text)
     }
 }
 
-// ---------------------------------------------------------------------------
-// HEADER
-// ---------------------------------------------------------------------------
+/* ---------------- STATES ---------------- */
 
 @Composable
-private fun SectionHeader(title: String) {
-    Text(
-        text = title,
-        fontWeight = FontWeight.Bold,
-        color = Black,
-        fontSize = 18.sp
-    )
-}
-
-// ---------------------------------------------------------------------------
-// BUTTON
-// ---------------------------------------------------------------------------
-
-@Composable
-private fun EditProfileButton(onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = GreenPrimary,
-            contentColor = White
-        )
-    ) {
-        Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("Editar Perfil")
+fun LoadingState() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(color = GreenPrimary)
     }
 }
 
-// ---------------------------------------------------------------------------
-// PREVIEW
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true)
 @Composable
-private fun PreviewFarmer() {
-    ProfileScreen(isFarmer = true, onEditProfileClick = {})
+fun ErrorState() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("No se pudo cargar el perfil")
+    }
 }

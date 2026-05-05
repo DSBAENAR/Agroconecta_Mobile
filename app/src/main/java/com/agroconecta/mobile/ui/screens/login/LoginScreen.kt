@@ -90,78 +90,64 @@ import com.agroconecta.mobile.ui.theme.White
 @Composable
 fun LoginScreen(
     isFarmer: Boolean = false,
-    onLoginClick: () -> Unit = {},
+    onLoginClick: (String, String) -> Unit,
     onGoogleClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onForgotPasswordClick: () -> Unit = {},
     onSmsCodeClick: () -> Unit = {},
 ) {
-    // Derive accent palette from variant
+
     val accentColor by animateColorAsState(
         targetValue = if (isFarmer) OrangeAccent else GreenPrimary,
-        animationSpec = tween(durationMillis = 300),
-        label = "accentColor",
+        animationSpec = tween(300),
+        label = "accentColor"
     )
+
     val accentLightColor by animateColorAsState(
         targetValue = if (isFarmer) OrangeLight else GreenLight,
-        animationSpec = tween(durationMillis = 300),
-        label = "accentLightColor",
+        animationSpec = tween(300),
+        label = "accentLightColor"
     )
-    // Field state
+
     var identifier by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = White,
+        color = White
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(56.dp))
 
-            // ------------------------------------------------------------------
-            // Hero icon circle
-            // ------------------------------------------------------------------
-            HeroIconCircle(
-                accentColor = accentColor,
-                accentLightColor = accentLightColor,
-            )
+            Spacer(Modifier.height(56.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
+            HeroIconCircle(accentColor, accentLightColor)
 
-            // ------------------------------------------------------------------
-            // App title
-            // ------------------------------------------------------------------
+            Spacer(Modifier.height(20.dp))
+
             Text(
-                text = "AgroConecta",
+                "AgroConecta",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Black,
-                letterSpacing = (-0.5).sp,
+                color = Black
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(Modifier.height(10.dp))
 
-            // ------------------------------------------------------------------
-            // Role badge (pill)
-            // ------------------------------------------------------------------
             RoleBadge(
                 label = if (isFarmer) "Agricultor / Vendedor" else "Comprador",
                 backgroundColor = accentLightColor,
-                contentColor = accentColor,
+                contentColor = accentColor
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // ------------------------------------------------------------------
-            // Identifier field  (email for buyer / phone for farmer)
-            // ------------------------------------------------------------------
             LabeledInputField(
                 label = if (isFarmer) "Correo o teléfono" else "Correo electrónico",
                 value = identifier,
@@ -169,146 +155,95 @@ fun LoginScreen(
                 placeholder = if (isFarmer) "+57 300 000 0000" else "tu@email.com",
                 leadingIcon = {
                     Icon(
-                        imageVector = if (isFarmer) Icons.Filled.Phone else Icons.Filled.Email,
-                        contentDescription = null,
-                        tint = GrayMedium,
-                        modifier = Modifier.size(20.dp),
+                        if (isFarmer) Icons.Default.Phone else Icons.Default.Email,
+                        null,
+                        tint = GrayMedium
                     )
                 },
                 keyboardType = if (isFarmer) KeyboardType.Phone else KeyboardType.Email,
-                accentColor = accentColor,
+                accentColor = accentColor
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // ------------------------------------------------------------------
-            // Password field
-            // ------------------------------------------------------------------
             LabeledInputField(
                 label = "Contraseña",
                 value = password,
                 onValueChange = { password = it },
                 placeholder = "••••••••",
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Lock,
-                        contentDescription = null,
-                        tint = GrayMedium,
-                        modifier = Modifier.size(20.dp),
-                    )
+                    Icon(Icons.Default.Lock, null, tint = GrayMedium)
                 },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            imageVector = if (passwordVisible)
-                                Icons.Filled.Visibility
-                            else
-                                Icons.Filled.VisibilityOff,
-                            contentDescription = if (passwordVisible)
-                                "Ocultar contraseña"
-                            else
-                                "Mostrar contraseña",
-                            tint = GrayMedium,
-                            modifier = Modifier.size(20.dp),
+                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            null,
+                            tint = GrayMedium
                         )
                     }
                 },
                 visualTransformation = if (passwordVisible)
                     VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                else PasswordVisualTransformation(),
                 keyboardType = KeyboardType.Password,
-                accentColor = accentColor,
+                accentColor = accentColor
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(Modifier.height(10.dp))
 
-            // ------------------------------------------------------------------
-            // Forgot password link
-            // ------------------------------------------------------------------
             Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.CenterEnd,
+                Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd
             ) {
                 Text(
-                    text = "¿Olvidaste tu contraseña?",
+                    "¿Olvidaste tu contraseña?",
                     color = accentColor,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable(onClick = onForgotPasswordClick),
+                    modifier = Modifier.clickable { onForgotPasswordClick() }
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // ------------------------------------------------------------------
-            // Primary CTA — Iniciar Sesión
-            // ------------------------------------------------------------------
             Button(
-                onClick = onLoginClick,
+                onClick = { onLoginClick(identifier.trim(), password) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(14.dp),
-                        ambientColor = accentColor.copy(alpha = 0.25f),
-                        spotColor = accentColor.copy(alpha = 0.35f),
-                    ),
+                    .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = accentColor,
-                    contentColor = White,
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
             ) {
-                Text(
-                    text = "Iniciar Sesión",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.3.sp,
-                )
+                Text("Iniciar Sesión", color = White)
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // ------------------------------------------------------------------
-            // "o" divider
-            // ------------------------------------------------------------------
             OrDivider()
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // ------------------------------------------------------------------
-            // Google outlined button
-            // ------------------------------------------------------------------
             GoogleSignInButton(
                 borderColor = GrayBorder,
-                onClick = onGoogleClick,
+                onClick = onGoogleClick
             )
 
-            // ------------------------------------------------------------------
-            // SMS code button (farmer variant only)
-            // ------------------------------------------------------------------
             if (isFarmer) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
                 SmsCodeButton(
                     borderColor = accentColor,
                     contentColor = accentColor,
-                    onClick = onSmsCodeClick,
+                    onClick = onSmsCodeClick
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // ------------------------------------------------------------------
-            // Register footer
-            // ------------------------------------------------------------------
             RegisterFooter(
                 accentColor = accentColor,
-                onRegisterClick = onRegisterClick,
+                onRegisterClick = onRegisterClick
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
@@ -569,19 +504,24 @@ private fun RegisterFooter(
 // ---------------------------------------------------------------------------
 // Previews
 // ---------------------------------------------------------------------------
-
-@Preview(showBackground = true, name = "Buyer Login")
+@Preview(showBackground = true)
 @Composable
 private fun PreviewBuyerLogin() {
     AgroConectaTheme {
-        LoginScreen(isFarmer = false)
+        LoginScreen(
+            isFarmer = false,
+            onLoginClick = { _, _ -> }
+        )
     }
 }
 
-@Preview(showBackground = true, name = "Farmer Login")
+@Preview(showBackground = true)
 @Composable
 private fun PreviewFarmerLogin() {
     AgroConectaTheme {
-        LoginScreen(isFarmer = true)
+        LoginScreen(
+            isFarmer = true,
+            onLoginClick = { _, _ -> }
+        )
     }
 }

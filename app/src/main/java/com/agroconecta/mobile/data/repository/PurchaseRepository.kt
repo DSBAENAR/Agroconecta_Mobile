@@ -11,4 +11,6 @@ interface PurchaseRepository {
     suspend fun getRecentPurchases(limit: Int = 10): List<Purchase>
 
     suspend fun getPurchasesByBuyer(buyerId: Int): List<Purchase>
+
+    suspend fun getPurchasesByFarmer(farmerId: Int): List<Purchase>
 }
