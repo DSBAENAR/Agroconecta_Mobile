@@ -10,5 +10,5 @@ interface UserRepository {
 
     suspend fun getBuyerById(id: Int): Buyer?
 
-    suspend fun login(email: String, password: String): UserSession?
+    suspend fun login(email: String, password: String, isFarmer: Boolean = false): UserSession?
 }

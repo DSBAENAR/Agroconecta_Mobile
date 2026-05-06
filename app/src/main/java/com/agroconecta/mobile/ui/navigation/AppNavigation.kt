@@ -11,7 +11,10 @@ import androidx.navigation.navArgument
 import com.agroconecta.mobile.data.session.UserRole
 import com.agroconecta.mobile.ui.components.AgroBottomNavBar
 import com.agroconecta.mobile.ui.screens.buyer.BuyerDashboardScreen
+import com.agroconecta.mobile.ui.screens.farmer.AIAnalysisScreen
+import com.agroconecta.mobile.ui.screens.farmer.CreatePublicationScreen
 import com.agroconecta.mobile.ui.screens.farmer.FarmerDashboardScreen
+import com.agroconecta.mobile.ui.screens.farmer.FarmerHomeScreen
 import com.agroconecta.mobile.ui.screens.home.HomeScreen
 import com.agroconecta.mobile.ui.screens.login.LoginScreen
 import com.agroconecta.mobile.ui.screens.marketplace.MarketplaceScreen
@@ -59,7 +62,7 @@ fun AppNavigation() {
             }
 
             navController.navigate(route) {
-                popUpTo(Screen.LoginBuyer.route) { inclusive = true }
+                popUpTo(0) { inclusive = true }
             }
         }
     }
@@ -137,7 +140,7 @@ fun AppNavigation() {
                 LoginScreen(
                     isFarmer = true,
                     onLoginClick = { email, password ->
-                        userViewModel.login(email, password)
+                        userViewModel.login(email, password, isFarmer = true)
                     },
                     onGoogleClick = {},
                     onRegisterClick = {
@@ -164,11 +167,10 @@ fun AppNavigation() {
             }
 
             composable(Screen.FarmerHome.route) {
-                HomeScreen(
-                    onExploreClick = {
-                        navController.navigate(Screen.Marketplace.route)
+                FarmerHomeScreen(
+                    onPublishClick = {
+                        navController.navigate(Screen.CreatePublication.route)
                     },
-                    onFarmerClick = {},
                     onProductClick = { id ->
                         navController.navigate(Screen.ProductDetail.createRoute(id))
                     }
@@ -243,9 +245,25 @@ fun AppNavigation() {
 
             composable(Screen.FarmerDashboard.route) {
                 FarmerDashboardScreen(
-                    onAddProductClick = {},
-                    onAnalysisClick = {}
+                    onAddProductClick = {
+                        navController.navigate(Screen.CreatePublication.route)
+                    },
+                    onAnalysisClick = {
+                        navController.navigate(Screen.AIAnalysis.route)
+                    }
                 )
+            }
+
+            // ---------------- FARMER TOOLS ----------------
+            composable(Screen.CreatePublication.route) {
+                CreatePublicationScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onPublishClick = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.AIAnalysis.route) {
+                AIAnalysisScreen()
             }
         }
     }

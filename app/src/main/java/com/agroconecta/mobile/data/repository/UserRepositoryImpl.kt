@@ -35,16 +35,14 @@ class UserRepositoryImpl(
 
     override suspend fun login(
         email: String,
-        password: String
+        password: String,
+        isFarmer: Boolean
     ): UserSession? =
         withContext(Dispatchers.IO) {
 
             val session: UserSession? = when {
-                email.contains("farmer", ignoreCase = true) ->
+                isFarmer || email.contains("farmer", ignoreCase = true) ->
                     MockAuth.loginFarmer()
-
-                email.contains("buyer", ignoreCase = true) ->
-                    MockAuth.loginBuyer()
 
                 else -> MockAuth.loginBuyer()
             }
