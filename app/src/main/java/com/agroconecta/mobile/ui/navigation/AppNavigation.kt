@@ -204,6 +204,9 @@ fun AppNavigation() {
                     onContactFarmerClick = {},
                     onViewFarmerClick = { farmerId ->
                         navController.navigate(Screen.FarmerDetail.createRoute(farmerId))
+                    },
+                    onPublishSimilarClick = {
+                        navController.navigate(Screen.CreatePublication.route)
                     }
                 )
             }
