@@ -13,6 +13,7 @@ import com.agroconecta.mobile.ui.components.AgroBottomNavBar
 import com.agroconecta.mobile.ui.screens.buyer.BuyerDashboardScreen
 import com.agroconecta.mobile.ui.screens.farmer.AIAnalysisScreen
 import com.agroconecta.mobile.ui.screens.farmer.CreatePublicationScreen
+import com.agroconecta.mobile.ui.screens.farmer.FarmerAccountScreen
 import com.agroconecta.mobile.ui.screens.farmer.FarmerDashboardScreen
 import com.agroconecta.mobile.ui.screens.farmer.FarmerHomeScreen
 import com.agroconecta.mobile.ui.screens.home.HomeScreen
@@ -237,7 +238,10 @@ fun AppNavigation() {
             // ---------------- PROFILE ----------------
             composable(Screen.Profile.route) {
                 ProfileScreen(
-                    onEditProfileClick = {}
+                    onEditProfileClick = {},
+                    onAccountClick = {
+                        navController.navigate(Screen.FarmerAccount.route)
+                    }
                 )
             }
 
@@ -267,6 +271,12 @@ fun AppNavigation() {
 
             composable(Screen.AIAnalysis.route) {
                 AIAnalysisScreen()
+            }
+
+            composable(Screen.FarmerAccount.route) {
+                FarmerAccountScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
             }
         }
     }

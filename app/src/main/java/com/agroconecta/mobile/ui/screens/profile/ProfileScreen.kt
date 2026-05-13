@@ -1,11 +1,15 @@
 package com.agroconecta.mobile.ui.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +28,7 @@ import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 @Composable
 fun ProfileScreen(
     onEditProfileClick: () -> Unit,
+    onAccountClick: () -> Unit = {},
     viewModel: UserViewModel = hiltViewModel()
 ) {
 
@@ -54,7 +59,8 @@ fun ProfileScreen(
                     phone = farmer.phone,
                     location = farmer.location,
                     role = "Agricultor",
-                    onEditProfileClick = onEditProfileClick
+                    onEditProfileClick = onEditProfileClick,
+                    onAccountClick = onAccountClick
                 )
             }
         }
@@ -87,7 +93,8 @@ fun ProfileContent(
     phone: String,
     location: String?,
     role: String,
-    onEditProfileClick: () -> Unit
+    onEditProfileClick: () -> Unit,
+    onAccountClick: (() -> Unit)? = null
 ) {
     Scaffold { innerPadding ->
 
@@ -113,6 +120,11 @@ fun ProfileContent(
             Spacer(Modifier.height(28.dp))
 
             InfoCard(location, email, phone)
+
+            if (onAccountClick != null) {
+                Spacer(Modifier.height(20.dp))
+                AccountCard(onClick = onAccountClick)
+            }
 
             Spacer(Modifier.height(32.dp))
 
@@ -199,6 +211,59 @@ private fun InfoRow(icon: String, text: String) {
 }
 
 /* ---------------- STATES ---------------- */
+
+@Composable
+private fun AccountCard(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GreenPrimary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountBalance,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Mi Cuenta",
+                    fontWeight = FontWeight.SemiBold,
+                    color = GreenPrimary
+                )
+                Text(
+                    text = "Saldo, historial y datos bancarios",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = GrayMedium
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = GreenPrimary
+            )
+        }
+    }
+}
 
 @Composable
 fun LoadingState() {

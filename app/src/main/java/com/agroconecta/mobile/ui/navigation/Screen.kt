@@ -31,6 +31,7 @@ sealed class Screen(val route: String) {
 
     object CreatePublication : Screen("create_publication")
     object AIAnalysis : Screen("ai_analysis")
+    object FarmerAccount : Screen("farmer_account")
 
     object Cart : Screen("cart")
 }
