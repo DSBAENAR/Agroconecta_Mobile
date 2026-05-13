@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.CartViewModel
 import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
 
 private val placeholderColors = listOf(
@@ -40,8 +42,10 @@ private val placeholderColors = listOf(
 fun MarketplaceScreen(
     onProductClick: (String) -> Unit = {},
     onFilterClick: () -> Unit = {},
-    viewModel: ProductViewModel = hiltViewModel()
+    viewModel: ProductViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
 
@@ -62,6 +66,7 @@ fun MarketplaceScreen(
 
     val filteredProducts = remember(products, searchQuery, selectedCategory) {
         products.filter { product ->
+
             val matchesCategory =
                 selectedCategory == "Todos" ||
                         product.category.equals(selectedCategory, ignoreCase = true)
@@ -107,15 +112,18 @@ fun MarketplaceScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+
             Surface(
                 color = White,
                 shadowElevation = 4.dp
             ) {
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -135,7 +143,9 @@ fun MarketplaceScreen(
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+
                         itemsIndexed(categories) { _, category ->
+
                             FilterChip(
                                 selected = selectedCategory == category,
                                 onClick = { selectedCategory = category },
@@ -159,15 +169,21 @@ fun MarketplaceScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // ✅ itemsIndexed — sin indexOf O(n) en cada recomposición
+
                 itemsIndexed(
                     items = filteredProducts,
                     key = { _, product -> product.id }
                 ) { index, product ->
+
                     MarketplaceProductCard(
                         product = product,
                         placeholderColor = placeholderColors[index % placeholderColors.size],
-                        onClick = { onProductClick(product.id.toString()) }
+                        onClick = {
+                            onProductClick(product.id.toString())
+                        },
+                        onAddToCart = {
+                            cartViewModel.addToCart(product)
+                        }
                     )
                 }
             }
@@ -180,15 +196,19 @@ fun MarketplaceScreen(
 private fun MarketplaceProductCard(
     product: Product,
     placeholderColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAddToCart: () -> Unit
 ) {
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
+
         Column {
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,6 +216,7 @@ private fun MarketplaceProductCard(
                     .background(placeholderColor),
                 contentAlignment = Alignment.Center
             ) {
+
                 Icon(
                     imageVector = Icons.Default.Eco,
                     contentDescription = product.name,
@@ -205,6 +226,7 @@ private fun MarketplaceProductCard(
             }
 
             Column(modifier = Modifier.padding(14.dp)) {
+
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -217,13 +239,16 @@ private fun MarketplaceProductCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = GrayMedium,
                         modifier = Modifier.size(15.dp)
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = product.location,
                         style = MaterialTheme.typography.bodySmall,
@@ -245,19 +270,42 @@ private fun MarketplaceProductCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(15.dp)
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = product.rating.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = Black
                     )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onAddToCart,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GreenPrimary
+                    )
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.AddShoppingCart,
+                        contentDescription = null
+                    )
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    Text("Agregar")
                 }
             }
         }

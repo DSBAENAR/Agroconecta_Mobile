@@ -5,7 +5,7 @@ import com.agroconecta.mobile.data.model.UserStatus
 
 object MockFarmers {
 
-    val farmers = listOf(
+    val farmers = mutableListOf(
         Farmer(
             id = 1,
             name = "Juan Pérez",

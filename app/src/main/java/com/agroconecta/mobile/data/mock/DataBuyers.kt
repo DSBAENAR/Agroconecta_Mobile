@@ -4,7 +4,7 @@ import com.agroconecta.mobile.data.model.Buyer
 
 object MockBuyers {
 
-    val buyers = listOf(
+    val buyers = mutableListOf(
 
         Buyer(
             id = 1,

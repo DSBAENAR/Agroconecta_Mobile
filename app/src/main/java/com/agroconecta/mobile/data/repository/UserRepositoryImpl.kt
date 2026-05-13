@@ -55,4 +55,49 @@ class UserRepositoryImpl(
 
             session
         }
+    override suspend fun updateBuyer(
+        buyer: Buyer
+    ): Buyer =
+        withContext(Dispatchers.IO) {
+
+            try {
+                // futuro backend
+                buyer
+
+            } catch (e: Exception) {
+
+                val index = MockBuyers.buyers.indexOfFirst {
+                    it.id == buyer.id
+                }
+
+                if (index != -1) {
+                    MockBuyers.buyers[index] = buyer
+                }
+
+                buyer
+            }
+        }
+
+    override suspend fun updateFarmer(
+        farmer: Farmer
+    ): Farmer =
+        withContext(Dispatchers.IO) {
+
+            try {
+                // futuro backend
+                farmer
+
+            } catch (e: Exception) {
+
+                val index = MockFarmers.farmers.indexOfFirst {
+                    it.id == farmer.id
+                }
+
+                if (index != -1) {
+                    MockFarmers.farmers[index] = farmer
+                }
+
+                farmer
+            }
+        }
 }

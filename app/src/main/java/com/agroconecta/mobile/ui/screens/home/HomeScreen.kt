@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
+import com.agroconecta.mobile.ui.viewmodel.CartViewModel
 import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
 
 @Composable
@@ -29,8 +31,10 @@ fun HomeScreen(
     onExploreClick: () -> Unit,
     onFarmerClick: () -> Unit,
     onProductClick: (String) -> Unit = {},
-    viewModel: ProductViewModel = hiltViewModel()
+    viewModel: ProductViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
+
     val products = viewModel.products
     val isLoading = viewModel.isLoading
 
@@ -47,18 +51,23 @@ fun HomeScreen(
             .fillMaxSize()
             .background(White)
     ) {
+
         if (isLoading && products.isEmpty()) {
+
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
                 color = GreenPrimary
             )
+
         } else {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(vertical = 20.dp)
             ) {
+
                 SectionHeader(
                     title = "Top Productos",
                     onVerTodos = onExploreClick
@@ -67,28 +76,40 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (topProducts.isEmpty()) {
+
                     EmptySection()
+
                 } else {
+
                     ProductRow(
                         products = topProducts,
-                        onProductClick = onProductClick
+                        onProductClick = onProductClick,
+                        onAddToCart = {
+                            cartViewModel.addToCart(it)
+                        }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(28.dp))
 
                 categories.forEach { category ->
+
                     val categoryProducts = products.filter {
                         it.category.equals(category, ignoreCase = true)
                     }
 
                     if (categoryProducts.isNotEmpty()) {
+
                         CategorySection(
                             category = category,
                             products = categoryProducts,
                             onVerTodos = onExploreClick,
-                            onProductClick = onProductClick
+                            onProductClick = onProductClick,
+                            onAddToCart = {
+                                cartViewModel.addToCart(it)
+                            }
                         )
+
                         Spacer(modifier = Modifier.height(28.dp))
                     }
                 }
@@ -99,12 +120,14 @@ fun HomeScreen(
 
 @Composable
 private fun EmptySection() {
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp),
         contentAlignment = Alignment.Center
     ) {
+
         Text(
             text = "No hay productos disponibles",
             style = MaterialTheme.typography.bodyMedium,
@@ -118,9 +141,12 @@ private fun CategorySection(
     category: String,
     products: List<Product>,
     onVerTodos: () -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onAddToCart: (Product) -> Unit
 ) {
+
     Column {
+
         SectionHeader(
             title = category,
             onVerTodos = onVerTodos
@@ -130,7 +156,8 @@ private fun CategorySection(
 
         ProductRow(
             products = products,
-            onProductClick = onProductClick
+            onProductClick = onProductClick,
+            onAddToCart = onAddToCart
         )
     }
 }
@@ -138,19 +165,28 @@ private fun CategorySection(
 @Composable
 private fun ProductRow(
     products: List<Product>,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onAddToCart: (Product) -> Unit
 ) {
+
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+
         items(
             items = products,
             key = { it.id }
         ) { product ->
+
             ProductCard(
                 product = product,
-                onClick = { onProductClick(product.id.toString()) }
+                onClick = {
+                    onProductClick(product.id.toString())
+                },
+                onAddToCart = {
+                    onAddToCart(product)
+                }
             )
         }
     }
@@ -161,6 +197,7 @@ private fun SectionHeader(
     title: String,
     onVerTodos: () -> Unit
 ) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -168,6 +205,7 @@ private fun SectionHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
@@ -187,8 +225,10 @@ private fun SectionHeader(
 @Composable
 private fun ProductCard(
     product: Product,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onAddToCart: () -> Unit
 ) {
+
     Card(
         onClick = onClick,
         modifier = Modifier.width(190.dp),
@@ -196,7 +236,9 @@ private fun ProductCard(
         colors = CardDefaults.cardColors(containerColor = White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
+
         Column {
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -204,6 +246,7 @@ private fun ProductCard(
                     .background(Color(0xFFE8F5E9)),
                 contentAlignment = Alignment.Center
             ) {
+
                 Icon(
                     imageVector = Icons.Default.Eco,
                     contentDescription = product.name,
@@ -213,6 +256,7 @@ private fun ProductCard(
             }
 
             Column(modifier = Modifier.padding(14.dp)) {
+
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -225,13 +269,16 @@ private fun ProductCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = GrayMedium,
                         modifier = Modifier.size(16.dp)
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = product.location,
                         style = MaterialTheme.typography.bodySmall,
@@ -251,19 +298,42 @@ private fun ProductCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(16.dp)
                     )
+
                     Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = product.rating.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
                         color = Black
                     )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onAddToCart,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GreenPrimary
+                    )
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.AddShoppingCart,
+                        contentDescription = null
+                    )
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    Text("Agregar")
                 }
             }
         }

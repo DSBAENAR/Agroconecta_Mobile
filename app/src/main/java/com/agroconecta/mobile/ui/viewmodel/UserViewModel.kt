@@ -78,4 +78,34 @@ class UserViewModel @Inject constructor(
             isLoading = false
         }
     }
+
+    fun updateBuyer(buyer: Buyer) {
+        viewModelScope.launch {
+
+            isLoading = true
+
+            try {
+                currentBuyer = repository.updateBuyer(buyer)
+            } catch (e: Exception) {
+                error = e.message
+            }
+
+            isLoading = false
+        }
+    }
+
+    fun updateFarmer(farmer: Farmer) {
+        viewModelScope.launch {
+
+            isLoading = true
+
+            try {
+                currentFarmer = repository.updateFarmer(farmer)
+            } catch (e: Exception) {
+                error = e.message
+            }
+
+            isLoading = false
+        }
+    }
 }

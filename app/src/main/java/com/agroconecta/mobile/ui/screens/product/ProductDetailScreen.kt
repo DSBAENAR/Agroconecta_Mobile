@@ -9,11 +9,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
+
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -23,7 +25,6 @@ import androidx.compose.ui.unit.*
 import com.agroconecta.mobile.data.model.Product
 import com.agroconecta.mobile.ui.theme.*
 import com.agroconecta.mobile.ui.viewmodel.*
-
 
 @Composable
 fun ProductDetailScreen(
@@ -35,6 +36,7 @@ fun ProductDetailScreen(
     userViewModel: UserViewModel = hiltViewModel(),
     cartViewModel: CartViewModel = hiltViewModel()
 ) {
+
     val products = viewModel.products
     val farmer = userViewModel.currentFarmer
 
@@ -55,14 +57,21 @@ fun ProductDetailScreen(
     }
 
     when {
+
         viewModel.isLoading && product == null -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = GreenPrimary)
             }
         }
 
         product == null -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Producto no encontrado")
             }
         }
@@ -91,6 +100,7 @@ private fun ProductDetailContent(
     onContactFarmerClick: (String) -> Unit,
     onViewFarmerClick: (String) -> Unit
 ) {
+
     val description = if (product.description.isBlank()) {
         "Producto fresco y de alta calidad, cultivado por agricultores verificados de AgroConecta."
     } else {
@@ -104,7 +114,11 @@ private fun ProductDetailContent(
         .joinToString("")
         .uppercase()
 
-    Surface(modifier = Modifier.fillMaxSize(), color = White) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = White
+    ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -112,41 +126,49 @@ private fun ProductDetailContent(
         ) {
 
             BackButton(onBackClick)
+
             ProductImagePlaceholder()
 
-            Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
 
                 CategoryAndRatingRow(
                     category = product.category,
                     rating = product.rating.toDouble()
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    product.name,
+                    text = product.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Black
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                PriceSection(product.price, product.unit)
+                PriceSection(
+                    price = product.price,
+                    unit = product.unit
+                )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 DescriptionSection(description)
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 InfoCardsRow(
-                    "${product.available} ${product.unit}",
-                    "${product.minOrder} ${product.unit}",
-                    product.location
+                    a = "${product.available} ${product.unit}",
+                    b = "${product.minOrder} ${product.unit}",
+                    c = product.location
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 FarmerCard(
                     initials = farmerInitials,
@@ -157,15 +179,20 @@ private fun ProductDetailContent(
                     }
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                AddToCartButton(onAddToCart)
+                AddToCartButton(
+                    onClick = onAddToCart
+                )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                ContactFarmerButton(product.id.toString(), onContactFarmerClick)
+                ContactFarmerButton(
+                    productId = product.id.toString(),
+                    onContactFarmerClick = onContactFarmerClick
+                )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
@@ -175,13 +202,24 @@ private fun ProductDetailContent(
 private fun AddToCartButton(
     onClick: () -> Unit
 ) {
+
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = GreenPrimary
+        )
     ) {
-        Icon(Icons.Default.ShoppingCart, null)
-        Spacer(Modifier.width(8.dp))
+
+        Icon(
+            imageVector = Icons.Default.ShoppingCart,
+            contentDescription = null
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         Text("Agregar al carrito")
     }
 }
@@ -191,6 +229,7 @@ private fun CategoryAndRatingRow(
     category: String,
     rating: Double
 ) {
+
     val cappedRating = rating.coerceIn(0.0, 5.0)
 
     Row(
@@ -213,20 +252,26 @@ fun StarRating(
     rating: Double,
     maxStars: Int = 5
 ) {
+
     val animatedRating by animateFloatAsState(
         targetValue = rating.toFloat(),
         animationSpec = tween(600),
         label = "ratingAnim"
     )
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
 
         Row {
+
             for (i in 1..maxStars) {
 
                 val starValue = when {
                     i.toFloat() <= animatedRating -> 1f
-                    (i.toFloat() - animatedRating) < 1f -> animatedRating - (i - 1).toFloat()
+                    (i.toFloat() - animatedRating) < 1f ->
+                        animatedRating - (i - 1).toFloat()
+
                     else -> 0f
                 }
 
@@ -234,7 +279,7 @@ fun StarRating(
             }
         }
 
-        Spacer(Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(6.dp))
 
         Text(
             text = String.format("%.1f", rating),
@@ -246,22 +291,26 @@ fun StarRating(
 
 @Composable
 fun Star(fill: Float) {
-    Box(Modifier.size(18.dp)) {
+
+    Box(
+        modifier = Modifier.size(18.dp)
+    ) {
 
         Icon(
-            Icons.Default.StarBorder,
+            imageVector = Icons.Default.StarBorder,
             contentDescription = null,
             tint = GrayMedium,
             modifier = Modifier.matchParentSize()
         )
 
         Box(
-            Modifier
+            modifier = Modifier
                 .matchParentSize()
                 .fillMaxWidth(fill)
         ) {
+
             Icon(
-                Icons.Default.Star,
+                imageVector = Icons.Default.Star,
                 contentDescription = null,
                 tint = Color(0xFFFFC107),
                 modifier = Modifier.matchParentSize()
@@ -270,43 +319,62 @@ fun Star(fill: Float) {
     }
 }
 
-/* =========================
-   🔹 TUS COMPONENTES (NO TOCADOS)
-   ========================= */
-
 @Composable
 private fun Pill(
     text: String,
     background: Color,
     textColor: Color
 ) {
+
     Box(
-        Modifier
+        modifier = Modifier
             .clip(RoundedCornerShape(50))
             .background(background)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(text, color = textColor, fontWeight = FontWeight.SemiBold)
+
+        Text(
+            text = text,
+            color = textColor,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
 @Composable
-private fun BackButton(onBackClick: () -> Unit) {
+private fun BackButton(
+    onBackClick: () -> Unit
+) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onBackClick)
+            .clickable {
+                onBackClick()
+            }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.ArrowBack, null, tint = GreenPrimary)
-        Spacer(Modifier.width(8.dp))
-        Text("Volver", color = GreenPrimary, fontWeight = FontWeight.SemiBold)
+
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = null,
+            tint = GreenPrimary
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = "Volver",
+            color = GreenPrimary,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
 @Composable
 private fun ProductImagePlaceholder() {
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -314,47 +382,104 @@ private fun ProductImagePlaceholder() {
             .background(GreenLight),
         contentAlignment = Alignment.Center
     ) {
+
         Box(
             modifier = Modifier
                 .size(110.dp)
                 .clip(CircleShape)
-                .background(GreenPrimary.copy(alpha = 0.15f)),
+                .background(
+                    GreenPrimary.copy(alpha = 0.15f)
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Eco, null, tint = GreenPrimary, modifier = Modifier.size(60.dp))
+
+            Icon(
+                imageVector = Icons.Default.Eco,
+                contentDescription = null,
+                tint = GreenPrimary,
+                modifier = Modifier.size(60.dp)
+            )
         }
     }
 }
 
 @Composable
-private fun PriceSection(price: Double, unit: String) {
-    Row(verticalAlignment = Alignment.Bottom) {
+private fun PriceSection(
+    price: Double,
+    unit: String
+) {
+
+    Row(
+        verticalAlignment = Alignment.Bottom
+    ) {
+
         Text(
-            "$ ${String.format("%,.0f", price).replace(",", ".")}",
+            text = "$ ${String.format("%,.0f", price).replace(",", ".")}",
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = GreenPrimary
         )
-        Spacer(Modifier.width(8.dp))
-        Text("/ $unit", color = GrayMedium, modifier = Modifier.padding(bottom = 6.dp))
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Text(
+            text = "/ $unit",
+            color = GrayMedium,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
     }
 }
 
 @Composable
-private fun DescriptionSection(description: String) {
+private fun DescriptionSection(
+    description: String
+) {
+
     Column {
-        Text("Descripción", fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        Text(description, color = GrayDark)
+
+        Text(
+            text = "Descripción",
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = description,
+            color = GrayDark
+        )
     }
 }
 
 @Composable
-private fun InfoCardsRow(a: String, b: String, c: String) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        InfoCard(a, "Disponible", Modifier.weight(1f))
-        InfoCard(b, "Min. pedido", Modifier.weight(1f))
-        InfoCard(c, "Ubicación", Modifier.weight(1f), Icons.Default.LocationOn)
+private fun InfoCardsRow(
+    a: String,
+    b: String,
+    c: String
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+
+        InfoCard(
+            value = a,
+            label = "Disponible",
+            modifier = Modifier.weight(1f)
+        )
+
+        InfoCard(
+            value = b,
+            label = "Min. pedido",
+            modifier = Modifier.weight(1f)
+        )
+
+        InfoCard(
+            value = c,
+            label = "Ubicación",
+            modifier = Modifier.weight(1f),
+            icon = Icons.Default.LocationOn
+        )
     }
 }
 
@@ -365,22 +490,42 @@ private fun InfoCard(
     modifier: Modifier,
     icon: ImageVector? = null
 ) {
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = GrayLight)
+        colors = CardDefaults.cardColors(
+            containerColor = GrayLight
+        )
     ) {
+
         Column(
-            Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             icon?.let {
-                Icon(it, null, tint = GreenPrimary)
-                Spacer(Modifier.height(6.dp))
+
+                Icon(
+                    imageVector = it,
+                    contentDescription = null,
+                    tint = GreenPrimary
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
             }
 
-            Text(value, fontWeight = FontWeight.Bold)
-            Text(label, color = GrayMedium)
+            Text(
+                text = value,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = label,
+                color = GrayMedium
+            )
         }
     }
 }
@@ -392,51 +537,61 @@ private fun FarmerCard(
     subtitle: String,
     onViewFarmerClick: () -> Unit
 ) {
+
     Card(
-        colors = CardDefaults.cardColors(containerColor = GrayLight),
+        colors = CardDefaults.cardColors(
+            containerColor = GrayLight
+        ),
         shape = RoundedCornerShape(16.dp)
     ) {
+
         Row(
-            Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Box(
-                Modifier.size(52.dp).clip(CircleShape).background(GreenPrimary),
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(GreenPrimary),
                 contentAlignment = Alignment.Center
             ) {
-                Text(initials, color = White)
+
+                Text(
+                    text = initials,
+                    color = White
+                )
             }
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Column(Modifier.weight(1f)) {
-                Text(name, fontWeight = FontWeight.Bold)
-                Text(subtitle, color = GrayMedium)
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = name,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = subtitle,
+                    color = GrayMedium
+                )
             }
 
             Text(
-                "Ver",
+                text = "Ver",
                 color = GreenPrimary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onViewFarmerClick() }
+                modifier = Modifier.clickable {
+                    onViewFarmerClick()
+                }
             )
         }
-    }
-}
-
-@Composable
-private fun AddToCartButton(
-    productId: String,
-    onAddToCartClick: (String) -> Unit
-) {
-    Button(
-        onClick = { onAddToCartClick(productId) },
-        modifier = Modifier.fillMaxWidth().height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
-    ) {
-        Icon(Icons.Default.ShoppingCart, null)
-        Spacer(Modifier.width(8.dp))
-        Text("Agregar al carrito")
     }
 }
 
@@ -445,13 +600,24 @@ private fun ContactFarmerButton(
     productId: String,
     onContactFarmerClick: (String) -> Unit
 ) {
+
     OutlinedButton(
-        onClick = { onContactFarmerClick(productId) },
-        modifier = Modifier.fillMaxWidth().height(56.dp),
+        onClick = {
+            onContactFarmerClick(productId)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
         border = BorderStroke(1.5.dp, GreenPrimary)
     ) {
-        Icon(Icons.Outlined.ChatBubbleOutline, null)
-        Spacer(Modifier.width(8.dp))
+
+        Icon(
+            imageVector = Icons.Outlined.ChatBubbleOutline,
+            contentDescription = null
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         Text("Contactar agricultor")
     }
 }

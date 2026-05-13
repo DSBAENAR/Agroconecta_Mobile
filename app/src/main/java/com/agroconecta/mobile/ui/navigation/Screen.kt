@@ -33,4 +33,6 @@ sealed class Screen(val route: String) {
     object AIAnalysis : Screen("ai_analysis")
 
     object Cart : Screen("cart")
+
+    object EditProfile : Screen("edit_profile")
 }
