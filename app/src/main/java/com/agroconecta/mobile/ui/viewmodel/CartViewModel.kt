@@ -24,22 +24,53 @@ class CartViewModel @Inject constructor(
         product: Product,
         quantity: Double = 1.0
     ) {
-        cartManager.addToCart(product, quantity)
+
+        cartManager.addToCart(
+            product = product,
+            quantity = quantity
+        )
     }
 
-    fun removeFromCart(productId: Int) {
-        cartManager.removeFromCart(productId)
+    fun removeFromCart(
+        productId: Int
+    ) {
+
+        cartManager.removeFromCart(
+            productId
+        )
     }
 
-    fun increaseQuantity(productId: Int) {
-        cartManager.increaseQuantity(productId)
+    fun increaseQuantity(
+        productId: Int
+    ) {
+
+        cartManager.increaseQuantity(
+            productId
+        )
     }
 
-    fun decreaseQuantity(productId: Int) {
-        cartManager.decreaseQuantity(productId)
+    fun decreaseQuantity(
+        productId: Int
+    ) {
+
+        cartManager.decreaseQuantity(
+            productId
+        )
+    }
+
+    fun updateQuantity(
+        productId: Int,
+        quantity: Double
+    ) {
+
+        cartManager.updateQuantity(
+            productId = productId,
+            quantity = quantity
+        )
     }
 
     fun clearCart() {
+
         cartManager.clearCart()
     }
 }

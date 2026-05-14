@@ -11,13 +11,19 @@ import javax.inject.Singleton
 @Singleton
 class CartManager @Inject constructor() {
 
-    var cartItems by mutableStateOf<List<CartItem>>(emptyList())
+    var cartItems by mutableStateOf<List<CartItem>>(
+        emptyList()
+    )
 
     val totalPrice: Double
-        get() = cartItems.sumOf { it.totalPrice }
+        get() = cartItems.sumOf {
+            it.totalPrice
+        }
 
     val totalItems: Double
-        get() = cartItems.sumOf { it.quantity }
+        get() = cartItems.sumOf {
+            it.quantity
+        }
 
     fun addToCart(
         product: Product,
@@ -30,16 +36,21 @@ class CartManager @Inject constructor() {
 
         cartItems = if (existing != null) {
 
-            cartItems.map {
+            cartItems.map { item ->
 
-                if (it.product.id == product.id) {
+                if (item.product.id == product.id) {
 
-                    it.copy(
-                        quantity = it.quantity + quantity
+                    val newQuantity =
+                        item.quantity + quantity
+
+                    item.copy(
+                        quantity = newQuantity,
+                        totalPrice =
+                            newQuantity * item.product.price
                     )
 
                 } else {
-                    it
+                    item
                 }
             }
 
@@ -47,12 +58,15 @@ class CartManager @Inject constructor() {
 
             cartItems + CartItem(
                 product = product,
-                quantity = quantity
+                quantity = quantity,
+                totalPrice = quantity * product.price
             )
         }
     }
 
-    fun removeFromCart(productId: Int) {
+    fun removeFromCart(
+        productId: Int
+    ) {
 
         cartItems = cartItems.filterNot {
             it.product.id == productId
@@ -64,16 +78,21 @@ class CartManager @Inject constructor() {
         amount: Double = 0.5
     ) {
 
-        cartItems = cartItems.map {
+        cartItems = cartItems.map { item ->
 
-            if (it.product.id == productId) {
+            if (item.product.id == productId) {
 
-                it.copy(
-                    quantity = it.quantity + amount
+                val newQuantity =
+                    item.quantity + amount
+
+                item.copy(
+                    quantity = newQuantity,
+                    totalPrice =
+                        newQuantity * item.product.price
                 )
 
             } else {
-                it
+                item
             }
         }
     }
@@ -83,20 +102,49 @@ class CartManager @Inject constructor() {
         amount: Double = 0.5
     ) {
 
-        cartItems = cartItems.mapNotNull {
+        cartItems = cartItems.mapNotNull { item ->
 
-            if (it.product.id == productId) {
+            if (item.product.id == productId) {
 
-                val newQty = it.quantity - amount
+                val newQuantity =
+                    item.quantity - amount
 
-                if (newQty <= 0.0) {
+                if (newQuantity <= 0.0) {
+
                     null
+
                 } else {
-                    it.copy(quantity = newQty)
+
+                    item.copy(
+                        quantity = newQuantity,
+                        totalPrice =
+                            newQuantity * item.product.price
+                    )
                 }
 
             } else {
-                it
+                item
+            }
+        }
+    }
+
+    fun updateQuantity(
+        productId: Int,
+        quantity: Double
+    ) {
+
+        cartItems = cartItems.map { item ->
+
+            if (item.product.id == productId) {
+
+                item.copy(
+                    quantity = quantity,
+                    totalPrice =
+                        quantity * item.product.price
+                )
+
+            } else {
+                item
             }
         }
     }

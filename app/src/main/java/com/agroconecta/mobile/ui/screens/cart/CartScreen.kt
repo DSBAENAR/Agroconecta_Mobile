@@ -4,34 +4,28 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
-import com.agroconecta.mobile.data.model.Purchase
-import com.agroconecta.mobile.data.model.PurchaseStatus
-import com.agroconecta.mobile.data.session.SessionManager
 import com.agroconecta.mobile.ui.theme.GreenPrimary
 import com.agroconecta.mobile.ui.viewmodel.CartViewModel
-import com.agroconecta.mobile.ui.viewmodel.PurchaseViewModel
-import java.time.LocalDateTime
 import kotlin.math.roundToInt
 
 @Composable
 fun CartScreen(
-    cartViewModel: CartViewModel = hiltViewModel(),
-    purchaseViewModel: PurchaseViewModel = hiltViewModel()
+    onCheckoutClick: () -> Unit,
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
 
     val items = cartViewModel.cartItems
     val total = cartViewModel.totalPrice
-    val session = SessionManager.session
 
     Column(
         modifier = Modifier
@@ -64,7 +58,7 @@ fun CartScreen(
 
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
             items(
@@ -72,12 +66,18 @@ fun CartScreen(
                 key = { it.product.id }
             ) { item ->
 
+                var quantityText by remember(item.quantity) {
+                    mutableStateOf(
+                        item.quantity.toString()
+                    )
+                }
+
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
 
                     Column(
-                        modifier = Modifier.padding(14.dp)
+                        modifier = Modifier.padding(16.dp)
                     ) {
 
                         Text(
@@ -86,90 +86,118 @@ fun CartScreen(
                             fontWeight = FontWeight.Bold
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
                             text = "Precio por ${item.product.unit}: $" +
-                                    "${item.product.price.roundToInt()}"
+                                    item.product.price.roundToInt()
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        OutlinedTextField(
+                            value = quantityText,
+
+                            onValueChange = {
+
+                                quantityText = it
+
+                                val quantity =
+                                    it.toDoubleOrNull()
+
+                                if (
+                                    quantity != null &&
+                                    quantity > 0
+                                ) {
+
+                                    cartViewModel.updateQuantity(
+                                        productId = item.product.id,
+                                        quantity = quantity
+                                    )
+                                }
+                            },
+
+                            modifier = Modifier.fillMaxWidth(),
+
+                            label = {
+                                Text("Cantidad")
+                            },
+
+                            supportingText = {
+
+                                Text(
+                                    text =
+                                        "0.1 kg = 100 gramos"
+                                )
+                            },
+
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    keyboardType =
+                                        KeyboardType.Decimal
+                                ),
+
+                            singleLine = true
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text =
+                                "Pedido mínimo: ${
+                                    formatQuantity(
+                                        item.product.minOrder
+                                    )
+                                } ${item.product.unit}"
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Cantidad: ${
-                                formatQuantity(item.quantity)
-                            } ${item.product.unit}"
+                            text =
+                                "Disponible: ${
+                                    formatQuantity(
+                                        item.product.available
+                                    )
+                                } ${item.product.unit}"
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
                             text = "Subtotal: $" +
-                                    "${item.totalPrice.roundToInt()}",
+                                    item.totalPrice.roundToInt(),
+
                             color = GreenPrimary,
-                            fontWeight = FontWeight.SemiBold
+
+                            fontWeight = FontWeight.Bold
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        TextButton(
+                            onClick = {
+
+                                cartViewModel.removeFromCart(
+                                    item.product.id
+                                )
+                            }
                         ) {
 
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                            Icon(
+                                imageVector =
+                                    Icons.Default.Delete,
 
-                                IconButton(
-                                    onClick = {
-                                        cartViewModel.decreaseQuantity(
-                                            productId = item.product.id
-                                        )
-                                    }
-                                ) {
+                                contentDescription = null
+                            )
 
-                                    Icon(
-                                        imageVector = Icons.Default.Remove,
-                                        contentDescription = "Disminuir"
-                                    )
-                                }
+                            Spacer(
+                                modifier = Modifier.width(6.dp)
+                            )
 
-                                Text(
-                                    text = formatQuantity(item.quantity),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        cartViewModel.increaseQuantity(
-                                            productId = item.product.id
-                                        )
-                                    }
-                                ) {
-
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Aumentar"
-                                    )
-                                }
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    cartViewModel.removeFromCart(
-                                        item.product.id
-                                    )
-                                }
-                            ) {
-
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar"
-                                )
-                            }
+                            Text(
+                                text = "Eliminar"
+                            )
                         }
                     }
                 }
@@ -188,7 +216,8 @@ fun CartScreen(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement =
+                        Arrangement.SpaceBetween
                 ) {
 
                     Text(
@@ -205,52 +234,20 @@ fun CartScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = {
+                    onClick = onCheckoutClick,
 
-                        val buyerId = session?.userId
-                            ?: return@Button
-
-                        val purchases = items.map { item ->
-
-                            Purchase(
-                                id = (0..99999).random(),
-
-                                productId = item.product.id,
-
-                                productName = item.product.name,
-
-                                farmerId = item.product.farmerId,
-
-                                buyerId = buyerId,
-
-                                quantity = item.quantity,
-
-                                price = item.product.price,
-
-                                totalPrice = item.totalPrice,
-
-                                status = PurchaseStatus.PENDING,
-
-                                createdAt = LocalDateTime.now()
-                            )
-                        }
-
-                        purchaseViewModel.createPurchases(
-                            purchases
-                        )
-
-                        cartViewModel.clearCart()
-                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GreenPrimary
-                    )
+
+                    colors = ButtonDefaults
+                        .buttonColors(
+                            containerColor = GreenPrimary
+                        )
                 ) {
 
                     Text(
-                        text = "Finalizar compra"
+                        text = "Proceder al pago"
                     )
                 }
             }
@@ -262,7 +259,9 @@ private fun formatQuantity(
     quantity: Double
 ): String {
 
-    return if (quantity % 1.0 == 0.0) {
+    return if (
+        quantity % 1.0 == 0.0
+    ) {
         quantity.toInt().toString()
     } else {
         quantity.toString()

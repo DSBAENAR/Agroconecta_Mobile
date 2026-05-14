@@ -5,7 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -44,75 +44,76 @@ fun AgroBottomNavBar(
     val items = when (session.role.name) {
 
         "FARMER" -> listOf(
+
             BottomNavItem(
-                "INICIO",
-                Icons.Filled.Home,
-                Screen.FarmerHome.route
+                label = "INICIO",
+                icon = Icons.Filled.Home,
+                route = Screen.FarmerHome.route
             ),
 
             BottomNavItem(
-                "BUSCAR",
-                Icons.Filled.Search,
-                Screen.Marketplace.route
+                label = "BUSCAR",
+                icon = Icons.Filled.Search,
+                route = Screen.Marketplace.route
             ),
 
             BottomNavItem(
-                "PANEL",
-                Icons.Outlined.BarChart,
-                Screen.FarmerDashboard.route
+                label = "PANEL",
+                icon = Icons.Outlined.BarChart,
+                route = Screen.FarmerDashboard.route
             ),
 
             BottomNavItem(
-                "PERFIL",
-                Icons.Filled.Person,
-                Screen.Profile.route
+                label = "PERFIL",
+                icon = Icons.Filled.Person,
+                route = Screen.Profile.route
             ),
 
             BottomNavItem(
-                "SALIR",
-                Icons.AutoMirrored.Filled.ExitToApp,
-                "logout",
-                true
+                label = "SALIR",
+                icon = Icons.Filled.ExitToApp,
+                route = "logout",
+                isLogout = true
             )
         )
 
         else -> listOf(
 
             BottomNavItem(
-                "INICIO",
-                Icons.Filled.Home,
-                Screen.BuyerHome.route
+                label = "INICIO",
+                icon = Icons.Filled.Home,
+                route = Screen.BuyerHome.route
             ),
 
             BottomNavItem(
-                "BUSCAR",
-                Icons.Filled.Search,
-                Screen.Marketplace.route
+                label = "BUSCAR",
+                icon = Icons.Filled.Search,
+                route = Screen.Marketplace.route
             ),
 
             BottomNavItem(
-                "CARRITO",
-                Icons.Filled.ShoppingCart,
-                Screen.Cart.route
+                label = "CARRITO",
+                icon = Icons.Filled.ShoppingCart,
+                route = Screen.Cart.route
             ),
 
             BottomNavItem(
-                "PANEL",
-                Icons.Outlined.BarChart,
-                Screen.BuyerDashboard.route
+                label = "PANEL",
+                icon = Icons.Outlined.BarChart,
+                route = Screen.BuyerDashboard.route
             ),
 
             BottomNavItem(
-                "PERFIL",
-                Icons.Filled.Person,
-                Screen.Profile.route
+                label = "PERFIL",
+                icon = Icons.Filled.Person,
+                route = Screen.Profile.route
             ),
 
             BottomNavItem(
-                "SALIR",
-                Icons.AutoMirrored.Filled.ExitToApp,
-                "logout",
-                true
+                label = "SALIR",
+                icon = Icons.Filled.ExitToApp,
+                route = "logout",
+                isLogout = true
             )
         )
     }
@@ -150,8 +151,9 @@ private fun BottomNavBarContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -159,6 +161,7 @@ private fun BottomNavBarContent(
 
                 NavItem(
                     item = item,
+
                     selected = normalizeRoute(currentRoute) ==
                             normalizeRoute(item.route),
 
@@ -187,7 +190,7 @@ private fun NavItem(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 4.dp),
+            .padding(horizontal = 2.dp, vertical = 4.dp),
 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -200,7 +203,7 @@ private fun NavItem(
                     if (selected) GreenPrimary
                     else Color.Transparent
                 )
-                .padding(horizontal = 20.dp, vertical = 6.dp),
+                .padding(horizontal = 16.dp, vertical = 6.dp),
 
             contentAlignment = Alignment.Center
         ) {
@@ -208,7 +211,13 @@ private fun NavItem(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.label,
-                tint = if (selected) White else GrayMedium,
+
+                tint = if (selected) {
+                    White
+                } else {
+                    GrayMedium
+                },
+
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -216,7 +225,12 @@ private fun NavItem(
         Text(
             text = item.label,
             style = MaterialTheme.typography.labelSmall,
-            color = if (selected) GreenPrimary else GrayMedium
+
+            color = if (selected) {
+                GreenPrimary
+            } else {
+                GrayMedium
+            }
         )
     }
 }

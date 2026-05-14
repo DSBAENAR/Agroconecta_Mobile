@@ -1,5 +1,4 @@
 package com.agroconecta.mobile.data.remote.dto
-
 data class ProductDto(
     val id: Int,
     val name: String,
