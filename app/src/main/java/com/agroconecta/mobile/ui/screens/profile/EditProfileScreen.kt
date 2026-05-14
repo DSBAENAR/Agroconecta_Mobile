@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -16,15 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.agroconecta.mobile.data.model.Buyer
-import com.agroconecta.mobile.data.model.Farmer
+import com.agroconecta.mobile.data.session.SessionManager
 import com.agroconecta.mobile.data.session.UserRole
-import com.agroconecta.mobile.ui.theme.GreenPrimary
-import com.agroconecta.mobile.ui.theme.White
+import com.agroconecta.mobile.ui.theme.*
 import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 
 @Composable
@@ -33,142 +31,196 @@ fun EditProfileScreen(
     viewModel: UserViewModel = hiltViewModel()
 ) {
 
-    val session = viewModel.session
+    val session = SessionManager.session
+
     val farmer = viewModel.currentFarmer
     val buyer = viewModel.currentBuyer
 
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
+    val isLoading = viewModel.isLoading
 
-    LaunchedEffect(farmer, buyer) {
+    LaunchedEffect(session?.userId) {
 
-        farmer?.let {
-            name = it.name
-            email = it.email
-            phone = it.phone
-            location = it.location
-        }
+        val id = session?.userId ?: return@LaunchedEffect
 
-        buyer?.let {
-            name = it.name
-            email = it.email
-            phone = it.phone
+        when (session.role) {
+
+            UserRole.FARMER -> {
+                viewModel.loadFarmer(id)
+            }
+
+            UserRole.BUYER -> {
+                viewModel.loadBuyer(id)
+            }
+
+            else -> {}
         }
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = White
-    ) {
+    when (session?.role) {
+
+        UserRole.FARMER -> {
+
+            when {
+
+                isLoading -> {
+                    ProfileLoadingState()
+                }
+
+                farmer == null -> {
+                    ProfileErrorState()
+                }
+
+                else -> {
+
+                    EditProfileContent(
+                        currentName = farmer.name,
+                        currentEmail = farmer.email,
+                        currentPhone = farmer.phone,
+                        onBackClick = onBackClick
+                    )
+                }
+            }
+        }
+
+        UserRole.BUYER -> {
+
+            when {
+
+                isLoading -> {
+                    ProfileLoadingState()
+                }
+
+                buyer == null -> {
+                    ProfileErrorState()
+                }
+
+                else -> {
+
+                    EditProfileContent(
+                        currentName = buyer.name,
+                        currentEmail = buyer.email,
+                        currentPhone = buyer.phone,
+                        onBackClick = onBackClick
+                    )
+                }
+            }
+        }
+
+        else -> {
+            ProfileLoadingState()
+        }
+    }
+}
+
+@Composable
+private fun EditProfileContent(
+    currentName: String,
+    currentEmail: String,
+    currentPhone: String,
+    onBackClick: () -> Unit
+) {
+
+    var name by remember(currentName) {
+        mutableStateOf(currentName)
+    }
+
+    var email by remember(currentEmail) {
+        mutableStateOf(currentEmail)
+    }
+
+    var phone by remember(currentPhone) {
+        mutableStateOf(currentPhone)
+    }
+
+    Scaffold { padding ->
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            BackHeader(onBackClick)
+            BackButton(onBackClick)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ProfileImage()
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Editar perfil",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Black
+            )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                ProfileImage()
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             AgroTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                },
                 label = "Nombre"
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             AgroTextField(
                 value = email,
-                onValueChange = { email = it },
-                label = "Correo"
+                onValueChange = {
+                    email = it
+                },
+                label = "Correo electrónico"
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             AgroTextField(
                 value = phone,
-                onValueChange = { phone = it },
+                onValueChange = {
+                    phone = it
+                },
                 label = "Teléfono"
             )
-
-            if (session?.role == UserRole.FARMER) {
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                AgroTextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    label = "Ubicación"
-                )
-            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = {
 
-                    when (session?.role) {
+                    /*
+                    Aquí luego haces:
 
-                        UserRole.FARMER -> {
+                    viewModel.updateProfile(
+                        name,
+                        email,
+                        phone
+                    )
+                    */
 
-                            farmer?.let {
-
-                                viewModel.updateFarmer(
-                                    it.copy(
-                                        name = name,
-                                        email = email,
-                                        phone = phone,
-                                        location = location
-                                    )
-                                )
-                            }
-                        }
-
-                        UserRole.BUYER -> {
-
-                            buyer?.let {
-
-                                viewModel.updateBuyer(
-                                    it.copy(
-                                        name = name,
-                                        email = email,
-                                        phone = phone
-                                    )
-                                )
-                            }
-                        }
-
-                        else -> {}
-                    }
-
-                    onBackClick()
                 },
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+
                 colors = ButtonDefaults.buttonColors(
                     containerColor = GreenPrimary
                 ),
-                shape = RoundedCornerShape(18.dp)
+
+                shape = RoundedCornerShape(16.dp)
             ) {
 
                 Text(
                     text = "Guardar cambios",
-                    color = Color.White
+                    color = White,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -176,11 +228,17 @@ fun EditProfileScreen(
 }
 
 @Composable
-private fun BackHeader(
+private fun BackButton(
     onBackClick: () -> Unit
 ) {
 
     Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onBackClick()
+            },
+
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -188,11 +246,7 @@ private fun BackHeader(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = null,
             tint = GreenPrimary,
-            modifier = Modifier
-                .size(26.dp)
-                .clickable {
-                    onBackClick()
-                }
+            modifier = Modifier.size(26.dp)
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -212,7 +266,10 @@ private fun ProfileImage() {
         modifier = Modifier
             .size(110.dp)
             .clip(CircleShape)
-            .background(GreenPrimary.copy(alpha = 0.15f)),
+            .background(
+                GreenPrimary.copy(alpha = 0.15f)
+            ),
+
         contentAlignment = Alignment.Center
     ) {
 
@@ -232,18 +289,69 @@ private fun AgroTextField(
     label: String
 ) {
 
+    var hasBeenFocused by remember {
+        mutableStateOf(false)
+    }
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+
         label = {
             Text(label)
         },
-        modifier = Modifier.fillMaxWidth(),
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged { focusState ->
+
+                if (
+                    focusState.isFocused &&
+                    !hasBeenFocused
+                ) {
+
+                    hasBeenFocused = true
+
+                    onValueChange("")
+                }
+            },
+
+        singleLine = true,
+
         shape = RoundedCornerShape(16.dp),
+
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = GreenPrimary,
             focusedLabelColor = GreenPrimary,
             cursorColor = GreenPrimary
         )
     )
+}
+
+@Composable
+private fun ProfileLoadingState() {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+
+        CircularProgressIndicator(
+            color = GreenPrimary
+        )
+    }
+}
+
+@Composable
+private fun ProfileErrorState() {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Text(
+            text = "No se pudo cargar el perfil"
+        )
+    }
 }

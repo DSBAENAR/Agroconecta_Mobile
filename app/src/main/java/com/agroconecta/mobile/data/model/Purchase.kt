@@ -8,8 +8,8 @@ data class Purchase(
     val productName: String,
     val farmerId: Int,
     val buyerId: Int,
-    val quantity: Float,
-    val price: Float,
+    val quantity: Double,
+    val price: Double,
     val totalPrice: Double,
     val status: PurchaseStatus,
     val createdAt: LocalDateTime

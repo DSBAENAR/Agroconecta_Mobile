@@ -8,12 +8,13 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 fun PurchaseDto.toDomain(): Purchase {
+
     val parsedDate = tryParseDate(createdAt)
 
     return Purchase(
         id = id,
         productId = productId,
-        productName = productName ?: "Inexistente",
+        productName = productName,
         farmerId = farmerId,
         buyerId = buyerId,
         quantity = quantity,
@@ -25,6 +26,7 @@ fun PurchaseDto.toDomain(): Purchase {
 }
 
 fun Purchase.toDto(): PurchaseDto {
+
     return PurchaseDto(
         id = id,
         productId = productId,
@@ -35,21 +37,38 @@ fun Purchase.toDto(): PurchaseDto {
         price = price,
         totalPrice = totalPrice,
         status = status.name,
-        createdAt = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        createdAt = createdAt.format(
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        )
     )
 }
 
 private fun tryParseDate(raw: String): LocalDateTime {
+
     val formatters = listOf(
-        DateTimeFormatter.ISO_LOCAL_DATE_TIME,           // 2024-01-15T10:30:00
-        DateTimeFormatter.ISO_DATE_TIME,                 // 2024-01-15T10:30:00Z
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"), // 2024-01-15 10:30:00
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"), // con milisegundos
+
+        DateTimeFormatter.ISO_LOCAL_DATE_TIME,
+
+        DateTimeFormatter.ISO_DATE_TIME,
+
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd HH:mm:ss"
+        ),
+
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        )
     )
 
     for (formatter in formatters) {
+
         try {
-            return LocalDateTime.parse(raw, formatter)
+
+            return LocalDateTime.parse(
+                raw,
+                formatter
+            )
+
         } catch (_: DateTimeParseException) {
             continue
         }

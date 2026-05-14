@@ -1,60 +1,45 @@
 package com.agroconecta.mobile.ui.viewmodel
 
-import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
-import com.agroconecta.mobile.data.model.CartItem
+import com.agroconecta.mobile.data.cart.CartManager
 import com.agroconecta.mobile.data.model.Product
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class CartViewModel @Inject constructor() : ViewModel() {
+class CartViewModel @Inject constructor(
+    private val cartManager: CartManager
+) : ViewModel() {
 
-    var cartItems by mutableStateOf<List<CartItem>>(emptyList())
-        private set
+    val cartItems
+        get() = cartManager.cartItems
 
     val totalPrice: Double
-        get() = cartItems.sumOf { it.totalPrice }
+        get() = cartManager.totalPrice
 
-    val totalItems: Int
-        get() = cartItems.sumOf { it.quantity }
+    val totalItems: Double
+        get() = cartManager.totalItems
 
-    fun addToCart(product: Product) {
-        val existing = cartItems.find { it.product.id == product.id }
-
-        cartItems = if (existing != null) {
-            cartItems.map {
-                if (it.product.id == product.id) {
-                    it.copy(quantity = it.quantity + 1)
-                } else it
-            }
-        } else {
-            cartItems + CartItem(product, 1)
-        }
+    fun addToCart(
+        product: Product,
+        quantity: Double = 1.0
+    ) {
+        cartManager.addToCart(product, quantity)
     }
 
     fun removeFromCart(productId: Int) {
-        cartItems = cartItems.filterNot { it.product.id == productId }
+        cartManager.removeFromCart(productId)
     }
 
     fun increaseQuantity(productId: Int) {
-        cartItems = cartItems.map {
-            if (it.product.id == productId) {
-                it.copy(quantity = it.quantity + 1)
-            } else it
-        }
+        cartManager.increaseQuantity(productId)
     }
 
     fun decreaseQuantity(productId: Int) {
-        cartItems = cartItems.mapNotNull {
-            if (it.product.id == productId) {
-                val newQty = it.quantity - 1
-                if (newQty <= 0) null else it.copy(quantity = newQty)
-            } else it
-        }
+        cartManager.decreaseQuantity(productId)
     }
 
     fun clearCart() {
-        cartItems = emptyList()
+        cartManager.clearCart()
     }
 }

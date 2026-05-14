@@ -1,6 +1,7 @@
 package com.agroconecta.mobile.ui.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -37,6 +38,12 @@ fun HomeScreen(
 
     val products = viewModel.products
     val isLoading = viewModel.isLoading
+
+    LaunchedEffect(Unit) {
+        if (products.isEmpty()) {
+            viewModel.loadProducts()
+        }
+    }
 
     val topProducts = remember(products) {
         products.sortedByDescending { it.rating }.take(5)
@@ -214,6 +221,7 @@ private fun SectionHeader(
         )
 
         TextButton(onClick = onVerTodos) {
+
             Text(
                 text = "Ver todos",
                 color = GreenPrimary
@@ -230,7 +238,6 @@ private fun ProductCard(
 ) {
 
     Card(
-        onClick = onClick,
         modifier = Modifier.width(190.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = White),
@@ -243,7 +250,11 @@ private fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(130.dp)
-                    .background(Color(0xFFE8F5E9)),
+                    .background(Color(0xFFE8F5E9))
+                    .clickable {
+                        onClick()
+                    },
+
                 contentAlignment = Alignment.Center
             ) {
 
@@ -255,7 +266,9 @@ private fun ProductCard(
                 )
             }
 
-            Column(modifier = Modifier.padding(14.dp)) {
+            Column(
+                modifier = Modifier.padding(14.dp)
+            ) {
 
                 Text(
                     text = product.name,
@@ -268,7 +281,9 @@ private fun ProductCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
                     Icon(
                         imageVector = Icons.Default.LocationOn,
@@ -282,7 +297,9 @@ private fun ProductCard(
                     Text(
                         text = product.location,
                         style = MaterialTheme.typography.bodySmall,
-                        color = GrayMedium
+                        color = GrayMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -297,7 +314,9 @@ private fun ProductCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
                     Icon(
                         imageVector = Icons.Default.Star,

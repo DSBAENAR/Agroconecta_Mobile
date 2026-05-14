@@ -1,6 +1,7 @@
 package com.agroconecta.mobile.ui.screens.marketplace
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -201,7 +202,6 @@ private fun MarketplaceProductCard(
 ) {
 
     Card(
-        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -213,7 +213,11 @@ private fun MarketplaceProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(130.dp)
-                    .background(placeholderColor),
+                    .background(placeholderColor)
+                    .clickable {
+                        onClick()
+                    },
+
                 contentAlignment = Alignment.Center
             ) {
 

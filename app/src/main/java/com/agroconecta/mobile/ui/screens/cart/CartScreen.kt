@@ -5,10 +5,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +21,7 @@ import com.agroconecta.mobile.ui.theme.GreenPrimary
 import com.agroconecta.mobile.ui.viewmodel.CartViewModel
 import com.agroconecta.mobile.ui.viewmodel.PurchaseViewModel
 import java.time.LocalDateTime
+import kotlin.math.roundToInt
 
 @Composable
 fun CartScreen(
@@ -66,7 +67,10 @@ fun CartScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
 
-            items(items) { item ->
+            items(
+                items = items,
+                key = { it.product.id }
+            ) { item ->
 
                 Card(
                     modifier = Modifier.fillMaxWidth()
@@ -85,16 +89,28 @@ fun CartScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Precio unitario: $${item.product.price.toInt()}"
+                            text = "Precio por ${item.product.unit}: $" +
+                                    "${item.product.price.roundToInt()}"
                         )
 
+                        Spacer(modifier = Modifier.height(4.dp))
+
                         Text(
-                            text = "Subtotal: $${item.totalPrice.toInt()}",
+                            text = "Cantidad: ${
+                                formatQuantity(item.quantity)
+                            } ${item.product.unit}"
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Subtotal: $" +
+                                    "${item.totalPrice.roundToInt()}",
                             color = GreenPrimary,
                             fontWeight = FontWeight.SemiBold
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -108,44 +124,50 @@ fun CartScreen(
 
                                 IconButton(
                                     onClick = {
-                                        cartViewModel.decreaseQuantity(item.product.id)
+                                        cartViewModel.decreaseQuantity(
+                                            productId = item.product.id
+                                        )
                                     }
                                 ) {
 
                                     Icon(
                                         imageVector = Icons.Default.Remove,
-                                        contentDescription = null
+                                        contentDescription = "Disminuir"
                                     )
                                 }
 
                                 Text(
-                                    text = item.quantity.toString(),
+                                    text = formatQuantity(item.quantity),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
 
                                 IconButton(
                                     onClick = {
-                                        cartViewModel.increaseQuantity(item.product.id)
+                                        cartViewModel.increaseQuantity(
+                                            productId = item.product.id
+                                        )
                                     }
                                 ) {
 
                                     Icon(
                                         imageVector = Icons.Default.Add,
-                                        contentDescription = null
+                                        contentDescription = "Aumentar"
                                     )
                                 }
                             }
 
                             IconButton(
                                 onClick = {
-                                    cartViewModel.removeFromCart(item.product.id)
+                                    cartViewModel.removeFromCart(
+                                        item.product.id
+                                    )
                                 }
                             ) {
 
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = null
+                                    contentDescription = "Eliminar"
                                 )
                             }
                         }
@@ -174,7 +196,7 @@ fun CartScreen(
                     )
 
                     Text(
-                        text = "$${total.toInt()}",
+                        text = "$${total.roundToInt()}",
                         color = GreenPrimary,
                         fontWeight = FontWeight.Bold
                     )
@@ -185,25 +207,37 @@ fun CartScreen(
                 Button(
                     onClick = {
 
-                        val buyerId = session?.userId ?: return@Button
+                        val buyerId = session?.userId
+                            ?: return@Button
 
-                        val purchases = items.map {
+                        val purchases = items.map { item ->
 
                             Purchase(
                                 id = (0..99999).random(),
-                                productId = it.product.id,
-                                productName = it.product.name,
-                                farmerId = it.product.farmerId,
+
+                                productId = item.product.id,
+
+                                productName = item.product.name,
+
+                                farmerId = item.product.farmerId,
+
                                 buyerId = buyerId,
-                                quantity = it.quantity.toFloat(),
-                                price = it.product.price.toFloat(),
-                                totalPrice = it.totalPrice,
+
+                                quantity = item.quantity,
+
+                                price = item.product.price,
+
+                                totalPrice = item.totalPrice,
+
                                 status = PurchaseStatus.PENDING,
+
                                 createdAt = LocalDateTime.now()
                             )
                         }
 
-                        purchaseViewModel.createPurchases(purchases)
+                        purchaseViewModel.createPurchases(
+                            purchases
+                        )
 
                         cartViewModel.clearCart()
                     },
@@ -215,9 +249,22 @@ fun CartScreen(
                     )
                 ) {
 
-                    Text("Finalizar compra")
+                    Text(
+                        text = "Finalizar compra"
+                    )
                 }
             }
         }
+    }
+}
+
+private fun formatQuantity(
+    quantity: Double
+): String {
+
+    return if (quantity % 1.0 == 0.0) {
+        quantity.toInt().toString()
+    } else {
+        quantity.toString()
     }
 }
