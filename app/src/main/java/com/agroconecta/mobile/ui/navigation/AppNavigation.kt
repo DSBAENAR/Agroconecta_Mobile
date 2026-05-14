@@ -23,6 +23,7 @@ import com.agroconecta.mobile.ui.screens.product.FarmerDetailScreen
 import com.agroconecta.mobile.ui.screens.product.ProductDetailScreen
 import com.agroconecta.mobile.ui.screens.profile.EditProfileScreen
 import com.agroconecta.mobile.ui.screens.profile.ProfileScreen
+import com.agroconecta.mobile.ui.screens.register.RegisterScreen
 import com.agroconecta.mobile.ui.viewmodel.CartViewModel
 import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 
@@ -86,7 +87,7 @@ fun AppNavigation() {
 
             navController.navigate(route) {
 
-                popUpTo(Screen.LoginBuyer.route) {
+                popUpTo(0) {
                     inclusive = true
                 }
 
@@ -104,6 +105,8 @@ fun AppNavigation() {
                 AgroBottomNavBar(
 
                     currentRoute = currentRoute,
+
+                    cartItemCount = cartViewModel.totalItems.toInt(),
 
                     onNavigate = { route ->
 
@@ -450,6 +453,36 @@ fun AppNavigation() {
                     onAddProductClick = {},
 
                     onAnalysisClick = {}
+                )
+            }
+
+            composable(Screen.RegisterBuyer.route) {
+
+                RegisterScreen(
+                    isFarmer = false,
+                    onRegisterClick = {
+                        navController.navigate(Screen.BuyerHome.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onLoginClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(Screen.RegisterFarmer.route) {
+
+                RegisterScreen(
+                    isFarmer = true,
+                    onRegisterClick = {
+                        navController.navigate(Screen.FarmerHome.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onLoginClick = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }

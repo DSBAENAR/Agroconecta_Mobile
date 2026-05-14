@@ -36,7 +36,8 @@ data class BottomNavItem(
 fun AgroBottomNavBar(
     currentRoute: String,
     onNavigate: (String) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    cartItemCount: Int = 0
 ) {
 
     val session = SessionManager.session ?: return
@@ -122,7 +123,8 @@ fun AgroBottomNavBar(
         items = items,
         currentRoute = normalizeRoute(currentRoute),
         onNavigate = onNavigate,
-        onLogout = onLogout
+        onLogout = onLogout,
+        cartItemCount = cartItemCount
     )
 }
 
@@ -131,7 +133,8 @@ private fun BottomNavBarContent(
     items: List<BottomNavItem>,
     currentRoute: String,
     onNavigate: (String) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    cartItemCount: Int = 0
 ) {
 
     Box(
@@ -165,6 +168,8 @@ private fun BottomNavBarContent(
                     selected = normalizeRoute(currentRoute) ==
                             normalizeRoute(item.route),
 
+                    badgeCount = if (item.route == Screen.Cart.route) cartItemCount else 0,
+
                     onClick = {
 
                         if (item.isLogout) {
@@ -183,6 +188,7 @@ private fun BottomNavBarContent(
 private fun NavItem(
     item: BottomNavItem,
     selected: Boolean,
+    badgeCount: Int = 0,
     onClick: () -> Unit
 ) {
 
@@ -198,28 +204,34 @@ private fun NavItem(
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(50))
                 .background(
-                    if (selected) GreenPrimary
-                    else Color.Transparent
+                    color = if (selected) GreenPrimary else Color.Transparent,
+                    shape = RoundedCornerShape(50)
                 )
                 .padding(horizontal = 16.dp, vertical = 6.dp),
 
             contentAlignment = Alignment.Center
         ) {
 
-            Icon(
-                imageVector = item.icon,
-                contentDescription = item.label,
+            BadgedBox(
+                badge = {
+                    if (badgeCount > 0) {
+                        Badge {
+                            Text(if (badgeCount > 99) "99+" else badgeCount.toString())
+                        }
+                    }
+                }
+            ) {
 
-                tint = if (selected) {
-                    White
-                } else {
-                    GrayMedium
-                },
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = item.label,
 
-                modifier = Modifier.size(22.dp)
-            )
+                    tint = if (selected) White else GrayMedium,
+
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
 
         Text(
