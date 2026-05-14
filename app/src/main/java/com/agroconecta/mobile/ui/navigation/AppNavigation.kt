@@ -27,6 +27,7 @@ import com.agroconecta.mobile.ui.screens.profile.ProfileScreen
 import com.agroconecta.mobile.ui.viewmodel.UserViewModel
 import com.agroconecta.mobile.ui.screens.*
 import com.agroconecta.mobile.ui.screens.cart.CartScreen
+import com.agroconecta.mobile.ui.screens.notifications.NotificationsScreen
 
 
 @Composable
@@ -174,7 +175,16 @@ fun AppNavigation() {
                     },
                     onProductClick = { id ->
                         navController.navigate(Screen.ProductDetail.createRoute(id))
+                    },
+                    onNotificationsClick = {
+                        navController.navigate(Screen.Notifications.route)
                     }
+                )
+            }
+
+            composable(Screen.Notifications.route) {
+                NotificationsScreen(
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 

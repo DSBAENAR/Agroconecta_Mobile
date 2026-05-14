@@ -82,7 +82,11 @@ fun FarmerAccountScreen(onBackClick: () -> Unit) {
 
             Spacer(Modifier.height(20.dp))
 
-            TransactionHistorySection(transactions = mockTransactions)
+            TransactionHistorySection(
+                transactions = mockTransactions.sortedBy {
+                    if (it.status == TransactionStatus.PENDING) 0 else 1
+                }
+            )
 
             Spacer(Modifier.height(32.dp))
         }

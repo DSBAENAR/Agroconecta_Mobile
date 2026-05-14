@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,6 +31,7 @@ import com.agroconecta.mobile.ui.viewmodel.ProductViewModel
 fun FarmerHomeScreen(
     onPublishClick: () -> Unit,
     onProductClick: (String) -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
     viewModel: ProductViewModel = hiltViewModel()
 ) {
     val products = viewModel.products
@@ -62,22 +64,35 @@ fun FarmerHomeScreen(
                     .padding(vertical = 20.dp)
             ) {
                 // ── Greeting ──────────────────────────────────────────────
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Hola, $farmerName 👋",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Black
-                    )
-                    Text(
-                        text = "¿Qué quieres vender hoy?",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = GrayMedium
-                    )
+                    Column {
+                        Text(
+                            text = "Hola, $farmerName 👋",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Black
+                        )
+                        Text(
+                            text = "¿Qué quieres vender hoy?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = GrayMedium
+                        )
+                    }
+
+                    IconButton(onClick = onNotificationsClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = "Notificaciones",
+                            tint = GreenPrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

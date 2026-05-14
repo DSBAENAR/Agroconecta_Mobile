@@ -34,4 +34,6 @@ sealed class Screen(val route: String) {
     object FarmerAccount : Screen("farmer_account")
 
     object Cart : Screen("cart")
+    object Checkout : Screen("checkout")
+    object Notifications : Screen("notifications")
 }

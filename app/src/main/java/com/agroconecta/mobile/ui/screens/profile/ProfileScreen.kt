@@ -10,6 +10,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -189,24 +193,29 @@ private fun InfoCard(location: String?, email: String, phone: String) {
         Column(modifier = Modifier.padding(16.dp)) {
 
             location?.let {
-                InfoRow("📍", it)
+                InfoRow(Icons.Filled.LocationOn, it)
                 Spacer(Modifier.height(12.dp))
             }
 
-            InfoRow("✉️", email)
+            InfoRow(Icons.Filled.Email, email)
             Spacer(Modifier.height(12.dp))
 
-            InfoRow("📞", phone)
+            InfoRow(Icons.Filled.Phone, phone)
         }
     }
 }
 
 @Composable
-private fun InfoRow(icon: String, text: String) {
+private fun InfoRow(icon: ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(icon)
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = Color(0xFF757575)
+        )
         Spacer(Modifier.width(10.dp))
-        Text(text)
+        Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
