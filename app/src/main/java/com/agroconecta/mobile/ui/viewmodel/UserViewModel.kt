@@ -36,12 +36,12 @@ class UserViewModel @Inject constructor(
     val isLoggedIn: Boolean
         get() = session != null
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, isFarmer: Boolean = false) {
         viewModelScope.launch {
             isLoading = true
 
             try {
-                val result = repository.login(email, password)
+                val result = repository.login(email, password, isFarmer)
 
                 if (result != null) {
                     SessionManager.saveSession(result)

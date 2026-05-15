@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.agroconecta.mobile.data.model.Product
+import com.agroconecta.mobile.data.session.SessionManager
+import com.agroconecta.mobile.data.session.UserRole
 import com.agroconecta.mobile.ui.theme.*
 import com.agroconecta.mobile.ui.viewmodel.*
 
@@ -32,11 +34,12 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     onContactFarmerClick: (String) -> Unit,
     onViewFarmerClick: (String) -> Unit,
+    onPublishSimilarClick: () -> Unit = {},
     viewModel: ProductViewModel = hiltViewModel(),
     userViewModel: UserViewModel = hiltViewModel(),
     cartViewModel: CartViewModel = hiltViewModel()
 ) {
-
+    val isFarmer = SessionManager.session?.role == UserRole.FARMER
     val products = viewModel.products
     val farmer = userViewModel.currentFarmer
 
@@ -80,10 +83,10 @@ fun ProductDetailScreen(
             ProductDetailContent(
                 product = product,
                 farmerName = farmer?.name ?: "Cargando...",
+                isFarmer = isFarmer,
                 onBackClick = onBackClick,
-                onAddToCart = {
-                    cartViewModel.addToCart(product)
-                },
+                onAddToCart = { cartViewModel.addToCart(product) },
+                onPublishSimilarClick = onPublishSimilarClick,
                 onContactFarmerClick = onContactFarmerClick,
                 onViewFarmerClick = onViewFarmerClick
             )
@@ -95,8 +98,10 @@ fun ProductDetailScreen(
 private fun ProductDetailContent(
     product: Product,
     farmerName: String,
+    isFarmer: Boolean,
     onBackClick: () -> Unit,
     onAddToCart: () -> Unit,
+    onPublishSimilarClick: () -> Unit,
     onContactFarmerClick: (String) -> Unit,
     onViewFarmerClick: (String) -> Unit
 ) {
@@ -181,20 +186,31 @@ private fun ProductDetailContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AddToCartButton(
-                    onClick = onAddToCart
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ContactFarmerButton(
-                    productId = product.id.toString(),
-                    onContactFarmerClick = onContactFarmerClick
-                )
+                if (isFarmer) {
+                    PublishSimilarButton(onPublishSimilarClick)
+                } else {
+                    AddToCartButton(onAddToCart)
+                    Spacer(Modifier.height(12.dp))
+                    ContactFarmerButton(product.id.toString(), onContactFarmerClick)
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun PublishSimilarButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Icon(Icons.Default.Add, null)
+        Spacer(Modifier.width(8.dp))
+        Text("Publicar producto similar", fontWeight = FontWeight.SemiBold)
     }
 }
 
